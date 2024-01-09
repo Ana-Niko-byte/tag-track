@@ -1,8 +1,8 @@
 # Tag Track
 This application allows users to track their monthly expenses on a budget basis. The application presents a number of categories to the user, used to log expenses in an organised manner. These categories are classed as 'necessity' and 'luxury'. After logging their expenses, the user can view a summary of their budget on a Google sheets spread.  
 
-The application is available for viewing [here]()
-The Google Sheets for this application is available for use [here](https://docs.google.com/spreadsheets/d/1kGdwNqPvyRYIRL4LbEy-CgS1YDIHI6uKYHOG7gMbuB8/edit#gid=1925370965)
+The application is available for viewing [here]().
+The Google Sheets for this application is available for use [here](https://docs.google.com/spreadsheets/d/1kGdwNqPvyRYIRL4LbEy-CgS1YDIHI6uKYHOG7gMbuB8/edit#gid=1925370965).
 
 ![reponsive UI]()
 
