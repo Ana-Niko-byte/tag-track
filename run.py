@@ -47,6 +47,13 @@ def validate_string(string):
     """
     return string.isalpha()
 
+def validate_num_selection(num):
+    """
+    Validates any number input. 
+    Returns true if no digits or symbols are present. 
+    """
+    return num.isdigit()
+
 def ask_name():
     """
     A user loop asking for name until valid input is provided. 
@@ -64,25 +71,38 @@ def ask_month():
     Asks user to select one of the options in the months table for logging expenses. 
     if valid input, asks users to select the currency they wish to proceed with. 
     """
-    # Assign PrettyTable object to month_table
-    month_table = PrettyTable()
-    # Assign headings and iterate over each value in tuple MONTHS to append to the table. 
-    month_table.field_names = [colored('No.', 'light_green'), colored('Month', 'light_green')]
-    for num, month in MONTHS.items():
-        month_table.add_row([colored(num, 'grey'), colored(month, 'grey')])
-        month_table.align = 'l'
-    print(f'\n{month_table}')
-    month = input('\nPlease choose the month you want to log for: ')
-    validate_num_selection(month)
-
+    while True:
+        # Assign PrettyTable object to month_table
+        month_table = PrettyTable()
+        # Assign headings and iterate over each value in tuple MONTHS to append to the table. 
+        month_table.field_names = [colored('No.', 'light_green'), colored('Month', 'light_green')]
+        for num, month in MONTHS.items():
+            month_table.add_row([colored(num, 'grey'), colored(month, 'grey')])
+            month_table.align = 'l'
+        print(f'\n{month_table}')
+        month = input('\nPlease choose the month you want to log for: ')
+        if validate_month_selection(month):
+            ask_curr()
+            break
     return month
 
-def validate_num_selection(num):
-    if num.isdigit():
-        print('I\'m a number')
+def validate_month_selection(month):
+    """
+    Validates the selected number input for the month in conjunction with the validate_num_selection() function.
+    """
+    if validate_num_selection(month):
+        if int(month) > 0 and int(month) <= 12:
+            print('boom')
+            return True
+        else:
+            print('Please choose one of the options provided.')
+            return False
     else:
-        print('input number')
+        return False
 
+def ask_curr():
+    print('currency')
+    pass
 
 def main():
     print_intro()
