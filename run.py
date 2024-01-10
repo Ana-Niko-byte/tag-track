@@ -36,6 +36,7 @@ CURRENCY = {
     5 : 'PLN'
 }
 
+# Categories the user can select for logging an expense. 
 EXPENSES = {
     1 : 'Rent',
     2 : 'Groceries',
@@ -73,7 +74,7 @@ def quick_escape():
         elif user_escape == '':
             break
         else:
-            print(f'You have entered {user_escape}. Please try again.')
+            print(f'Invalid input. You entered {user_escape}. Please try again.')
             return False
     return user_escape
 
@@ -99,7 +100,7 @@ def validate_selection(selection, num_range, min_num_range = 0):
         if int(selection) > min_num_range and int(selection) <= num_range:
             return True
         else:
-            print('Please choose one of the options provided.')
+            print('Invalid input. Please choose one of the options provided.')
             return False
     else:
         return False
@@ -164,14 +165,28 @@ def ask_category():
     """
     create_table(EXPENSES, 'Expense Category', colour = 'magenta')
     while True:
-        cat = input('\nPlease choose the category you wish to log in: ')
+        cat = input('\nPlease choose a category: ')
         if validate_selection(cat, 6):
             escape = quick_escape()
             if escape == '':
-                print('continuing...')
+                ask_expense()
             break
     return cat
     
+def ask_expense():
+    """
+    Asks user for expense in the chosen category. 
+    If valid input, asks user if they wish to continue. 
+    """
+    while True:
+        expense_msg = '\nPlease enter the amount you spent: '
+        user_expense = input(expense_msg)
+        if validate_num_selection(user_expense):
+            print('valid number input')
+            break
+        else:
+            print('Invalid Input. Please enter the amount using digits only.')
+
 def main():
     print_intro()
     ask_name()
