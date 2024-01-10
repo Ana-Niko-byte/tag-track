@@ -36,6 +36,15 @@ CURRENCY = {
     5 : 'PLN'
 }
 
+EXPENSES = {
+    1 : 'Rent',
+    2 : 'Groceries',
+    3 : 'Vehicle',
+    4 : 'Cafe/Restaurant',
+    5 : 'Online Shopping',
+    6 : 'Other'
+}
+
 CREDS = Credentials.from_service_account_file('creds.json')
 CREDS_SCOPE = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(CREDS_SCOPE)
@@ -62,7 +71,6 @@ def quick_escape():
             break
         # 'Enter' gives an empty string so we check for this instead.
         elif user_escape == '':
-            print('continue')
             break
         else:
             print(f'You have entered {user_escape}. Please try again.')
@@ -83,14 +91,14 @@ def validate_num_selection(num):
     """
     return num.isdigit()
 
-def create_table(value, heading):
+def create_table(value, heading, colour = 'light_green'):
     """
     Creates tables using predefined tuple values.
     """
     # Assign PrettyTable object to month_table.
     table = PrettyTable()
     # Assign headings and iterate over each value in defined tuples to append to the table.
-    table.field_names = [colored('No.', 'light_green'), colored(heading, 'light_green')]
+    table.field_names = [colored('No.', colour), colored(heading, colour)]
     for num, parameter in value.items():
         table.add_row([colored(num, 'grey'), colored(parameter, 'grey')])
         table.align = 'l'
@@ -146,6 +154,19 @@ def validate_curr_selection(curr_selection):
             return False
     else:
         return False
+    
+def validate_category_selection(category_selection):
+    """
+    Validates the selected number input for the category in conjunction with the validate_num_selection() function.
+    """
+    if validate_num_selection(category_selection):
+        if int(category_selection) > 0 and int(category_selection) <= 6:
+            return True
+        else:
+            print('Please choose one of the options provided.')
+            return False
+    else:
+        return False
 
 def ask_curr():
     """
@@ -156,10 +177,27 @@ def ask_curr():
     while True:
         curr = input('\nPlease choose the currency you wish to log in: ')
         if validate_curr_selection(curr):
-            quick_escape()
+            escape = quick_escape()
+            if escape == '':
+                ask_category()
             break
     return curr
 
+def ask_category():
+    """
+    Asks user to select one of the options in the category table for logging expenses. 
+    If valid input, asks user if they wish to continue. 
+    """
+    create_table(EXPENSES, 'Expense Category', colour = 'magenta')
+    while True:
+        cat = input('\nPlease choose the category you wish to log in: ')
+        if validate_category_selection(cat):
+            escape = quick_escape()
+            if escape == '':
+                print('continuing...')
+            break
+    return cat
+    
 def main():
     print_intro()
     ask_name()
