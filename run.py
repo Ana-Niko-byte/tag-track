@@ -27,6 +27,15 @@ MONTHS = {
         12 : 'December'
     }
 
+# Currency the user can select for logging an expense. 
+CURRENCY = {
+    1 : 'EUR',
+    2 : 'GBP',
+    3 : 'USD',
+    4 : 'AUD',
+    5 : 'PLN'
+}
+
 CREDS = Credentials.from_service_account_file('creds.json')
 CREDS_SCOPE = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(CREDS_SCOPE)
@@ -39,6 +48,14 @@ def print_intro():
     text = text2art('Tag - Tracker')
     print(Fore.GREEN + 'Welcome to')
     print(Fore.GREEN + text + Fore.RESET)
+
+def quick_escape():
+    """
+    Allow users to exit the log or continue in the application
+    """
+    print('\nCheckpoint!')
+    escape_msg = '\nPlease press "Enter" to continue or type "q" to quit...'
+    return input(escape_msg)
 
 def validate_string(string):
     """
@@ -69,7 +86,7 @@ def ask_name():
 def ask_month():
     """
     Asks user to select one of the options in the months table for logging expenses. 
-    if valid input, asks users to select the currency they wish to proceed with. 
+    If valid input, asks users to select the currency they wish to proceed with. 
     """
     while True:
         # Assign PrettyTable object to month_table
@@ -86,13 +103,25 @@ def ask_month():
             break
     return month
 
-def validate_month_selection(month):
+def validate_month_selection(month_selection):
     """
     Validates the selected number input for the month in conjunction with the validate_num_selection() function.
     """
-    if validate_num_selection(month):
-        if int(month) > 0 and int(month) <= 12:
-            print('boom')
+    if validate_num_selection(month_selection):
+        if int(month_selection) > 0 and int(month_selection) <= 12:
+            return True
+        else:
+            print('Please choose one of the options provided.')
+            return False
+    else:
+        return False
+
+def validate_curr_selection(curr_selection):
+    """
+    Validates the selected number input for the currency in conjunction with the validate_num_selection() function.
+    """
+    if validate_num_selection(curr_selection):
+        if int(curr_selection) > 0 and int(curr_selection) <= 5:
             return True
         else:
             print('Please choose one of the options provided.')
@@ -101,8 +130,24 @@ def validate_month_selection(month):
         return False
 
 def ask_curr():
-    print('currency')
-    pass
+    """
+    Asks user to select one of the options in the currency table for logging expenses. 
+    If valid input, asks user if they wish to continue. 
+    """
+    while True:
+        # Assign PrettyTable object to curr_table
+        curr_table = PrettyTable()
+        # Assign headings and iterate over each value in tuple MONTHS to append to the table. 
+        curr_table.field_names = [colored('No.', 'light_green'), colored('Currency', 'light_green')]
+        for num, currency in CURRENCY.items():
+            curr_table.add_row([colored(num, 'grey'), colored(currency, 'grey')])
+            curr_table.align = 'l'
+        print(f'\n{curr_table}')
+        curr = input('\nPlease choose the currency you wish to log in: ')
+        if validate_curr_selection(curr):
+            quick_escape()
+            break
+    return curr
 
 def main():
     print_intro()
