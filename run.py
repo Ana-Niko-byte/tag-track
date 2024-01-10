@@ -54,8 +54,20 @@ def quick_escape():
     Allow users to exit the log or continue in the application
     """
     print('\nCheckpoint!')
-    escape_msg = '\nPlease press "Enter" to continue or type "q" to quit...'
-    return input(escape_msg)
+    while True:
+        escape_msg = '\nPlease press "Enter" to continue or type "q" to quit...'
+        user_escape = input(escape_msg)
+        if user_escape == 'q':
+            print('exit')
+            break
+        # 'Enter' gives an empty string so we check for this instead.
+        elif user_escape == '':
+            print('continue')
+            break
+        else:
+            print(f'You have entered {user_escape}. Please try again.')
+            return False
+    return user_escape
 
 def validate_string(string):
     """
@@ -75,7 +87,7 @@ def create_table(value, heading):
     """
     Creates tables using predefined tuple values.
     """
-    # Assign PrettyTable object to month_table
+    # Assign PrettyTable object to month_table.
     table = PrettyTable()
     # Assign headings and iterate over each value in defined tuples to append to the table.
     table.field_names = [colored('No.', 'light_green'), colored(heading, 'light_green')]
