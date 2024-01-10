@@ -114,7 +114,7 @@ def create_table(value, heading, colour = 'light_green'):
     # Assign headings and iterate over each value in defined tuples to append to the table.
     table.field_names = [colored('No.', colour), colored(heading, colour)]
     for num, parameter in value.items():
-        table.add_row([colored(num, 'grey'), colored(parameter, 'grey')])
+        table.add_row([colored(num, 'white'), colored(parameter, 'white')])
         table.align = 'l'
     print(f'\n{table}')
 
