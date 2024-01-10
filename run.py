@@ -71,6 +71,19 @@ def validate_num_selection(num):
     """
     return num.isdigit()
 
+def create_table(value, heading):
+    """
+    Creates tables using predefined tuple values.
+    """
+    # Assign PrettyTable object to month_table
+    table = PrettyTable()
+    # Assign headings and iterate over each value in defined tuples to append to the table.
+    table.field_names = [colored('No.', 'light_green'), colored(heading, 'light_green')]
+    for num, parameter in value.items():
+        table.add_row([colored(num, 'grey'), colored(parameter, 'grey')])
+        table.align = 'l'
+    print(f'\n{table}')
+
 def ask_name():
     """
     A user loop asking for name until valid input is provided. 
@@ -88,15 +101,8 @@ def ask_month():
     Asks user to select one of the options in the months table for logging expenses. 
     If valid input, asks users to select the currency they wish to proceed with. 
     """
+    create_table(MONTHS, 'Month')
     while True:
-        # Assign PrettyTable object to month_table
-        month_table = PrettyTable()
-        # Assign headings and iterate over each value in tuple MONTHS to append to the table. 
-        month_table.field_names = [colored('No.', 'light_green'), colored('Month', 'light_green')]
-        for num, month in MONTHS.items():
-            month_table.add_row([colored(num, 'grey'), colored(month, 'grey')])
-            month_table.align = 'l'
-        print(f'\n{month_table}')
         month = input('\nPlease choose the month you want to log for: ')
         if validate_month_selection(month):
             ask_curr()
@@ -134,15 +140,8 @@ def ask_curr():
     Asks user to select one of the options in the currency table for logging expenses. 
     If valid input, asks user if they wish to continue. 
     """
+    create_table(CURRENCY, 'Currency')
     while True:
-        # Assign PrettyTable object to curr_table
-        curr_table = PrettyTable()
-        # Assign headings and iterate over each value in tuple MONTHS to append to the table. 
-        curr_table.field_names = [colored('No.', 'light_green'), colored('Currency', 'light_green')]
-        for num, currency in CURRENCY.items():
-            curr_table.add_row([colored(num, 'grey'), colored(currency, 'grey')])
-            curr_table.align = 'l'
-        print(f'\n{curr_table}')
         curr = input('\nPlease choose the currency you wish to log in: ')
         if validate_curr_selection(curr):
             quick_escape()
