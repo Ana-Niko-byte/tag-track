@@ -91,6 +91,19 @@ def validate_num_selection(num):
     """
     return num.isdigit()
 
+def validate_selection(selection, num_range, min_num_range = 0):
+    """
+    Validates the selected input in conjunction with the validate_num_selection() function using a set number range.
+    """
+    if validate_num_selection(selection):
+        if int(selection) > min_num_range and int(selection) <= num_range:
+            return True
+        else:
+            print('Please choose one of the options provided.')
+            return False
+    else:
+        return False
+
 def create_table(value, heading, colour = 'light_green'):
     """
     Creates tables using predefined tuple values.
@@ -124,49 +137,10 @@ def ask_month():
     create_table(MONTHS, 'Month')
     while True:
         month = input('\nPlease choose the month you want to log for: ')
-        if validate_month_selection(month):
+        if validate_selection(month, 12):
             ask_curr()
             break
     return month
-
-def validate_month_selection(month_selection):
-    """
-    Validates the selected number input for the month in conjunction with the validate_num_selection() function.
-    """
-    if validate_num_selection(month_selection):
-        if int(month_selection) > 0 and int(month_selection) <= 12:
-            return True
-        else:
-            print('Please choose one of the options provided.')
-            return False
-    else:
-        return False
-
-def validate_curr_selection(curr_selection):
-    """
-    Validates the selected number input for the currency in conjunction with the validate_num_selection() function.
-    """
-    if validate_num_selection(curr_selection):
-        if int(curr_selection) > 0 and int(curr_selection) <= 5:
-            return True
-        else:
-            print('Please choose one of the options provided.')
-            return False
-    else:
-        return False
-    
-def validate_category_selection(category_selection):
-    """
-    Validates the selected number input for the category in conjunction with the validate_num_selection() function.
-    """
-    if validate_num_selection(category_selection):
-        if int(category_selection) > 0 and int(category_selection) <= 6:
-            return True
-        else:
-            print('Please choose one of the options provided.')
-            return False
-    else:
-        return False
 
 def ask_curr():
     """
@@ -176,7 +150,7 @@ def ask_curr():
     create_table(CURRENCY, 'Currency')
     while True:
         curr = input('\nPlease choose the currency you wish to log in: ')
-        if validate_curr_selection(curr):
+        if validate_selection(curr, 5):
             escape = quick_escape()
             if escape == '':
                 ask_category()
@@ -191,7 +165,7 @@ def ask_category():
     create_table(EXPENSES, 'Expense Category', colour = 'magenta')
     while True:
         cat = input('\nPlease choose the category you wish to log in: ')
-        if validate_category_selection(cat):
+        if validate_selection(cat, 6):
             escape = quick_escape()
             if escape == '':
                 print('continuing...')
