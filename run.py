@@ -68,7 +68,7 @@ def quick_escape():
     """
     print('\nCheckpoint!')
     while True:
-        escape_msg = '\nPlease press "Enter" to continue or type "q" to quit...'
+        escape_msg = '\n➤ Please press "Enter" to continue or type "q" to quit...'
         user_escape = input(escape_msg)
         if user_escape == 'q':
             print('exit')
@@ -77,7 +77,7 @@ def quick_escape():
         elif user_escape == '':
             break
         else:
-            print(f'Invalid input. You entered {user_escape}. Please try again.')
+            print(f'❌ Invalid input. You entered {user_escape}. Please try again.')
             return False
     return user_escape
 
@@ -103,7 +103,7 @@ def validate_selection(selection, num_range, min_num_range = 0):
         if int(selection) > min_num_range and int(selection) <= num_range:
             return True
         else:
-            print('Invalid input. Please choose one of the options provided.')
+            print('❌ Invalid input. Please choose one of the options provided.')
             return False
     else:
         return False
@@ -127,8 +127,9 @@ def ask_name():
     Once valid, the user is asked to selected a month from the provided list. 
     """
     while True:
-        name = input('Please tell me your name: ')
+        name = input('➤ Please tell me your name: ')
         if validate_string(name):
+            print('✅')
             ask_month()
             break
     return name
@@ -140,8 +141,9 @@ def ask_month():
     """
     create_table(MONTHS, 'Month')
     while True:
-        month = input('\nPlease choose the month you want to log for: ')
+        month = input('\n➤ Please choose the month you want to log for: ')
         if validate_selection(month, 12):
+            print('✅')
             get_month_sheet(MONTHS[int(month)])
             get_worksheet_column(MONTHS[int(month)])
             ask_curr()
@@ -164,8 +166,9 @@ def ask_curr():
     """
     create_table(CURRENCY, 'Currency')
     while True:
-        curr = input('\nPlease choose the currency you wish to log in: ')
+        curr = input('\n➤ Please choose the currency you wish to log in: ')
         if validate_selection(curr, 5):
+            print('✅')
             escape = quick_escape()
             if escape == '':
                 ask_category()
@@ -179,8 +182,9 @@ def ask_category():
     """
     create_table(EXPENSES, 'Expense Category', colour = 'magenta')
     while True:
-        cat = input('\nPlease choose a category: ')
+        cat = input('\n➤ Please choose a category: ')
         if validate_selection(cat, 6):
+            print('✅')
             get_category_cell(cat)
             escape = quick_escape()
             if escape == '':
@@ -194,13 +198,14 @@ def ask_expense(category):
     If valid input, asks user if they wish to continue. 
     """
     while True:
-        expense_msg = f'\nPlease enter the amount you spent on {category}: '
+        expense_msg = f'\n➤ Please enter the amount you spent on {category}: '
         user_expense = input(expense_msg)
         if validate_num_selection(user_expense):
+            print('✅')
             print('valid number input')
             break
         else:
-            print('Invalid Input. Please enter the amount using digits only.')
+            print('❌ Invalid Input. Please enter the amount using digits only.')
     return user_expense
 
 def get_worksheet_column(working_sheet):
@@ -212,7 +217,7 @@ def get_worksheet_column(working_sheet):
     for col in range(3,9):
         column = sheet.col_values(col)
         COLUMNS.append(column[1:])
-    return COLUMNS
+    return column
 
 def get_category_cell(cat):
     """
