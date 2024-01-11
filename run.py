@@ -140,6 +140,7 @@ def ask_month():
         month = input('\nPlease choose the month you want to log for: ')
         if validate_selection(month, 12):
             get_month_sheet(MONTHS[int(month)])
+            get_worksheet_column(MONTHS[int(month)])
             ask_curr()
             break
     return month
@@ -179,17 +180,17 @@ def ask_category():
         if validate_selection(cat, 6):
             escape = quick_escape()
             if escape == '':
-                ask_expense()
+                ask_expense(EXPENSES[int(cat)])
             break
     return cat
     
-def ask_expense():
+def ask_expense(category):
     """
     Asks user for expense in the chosen category. 
     If valid input, asks user if they wish to continue. 
     """
     while True:
-        expense_msg = '\nPlease enter the amount you spent: '
+        expense_msg = f'\nPlease enter the amount you spent on {category}: '
         user_expense = input(expense_msg)
         if validate_num_selection(user_expense):
             print('valid number input')
@@ -197,6 +198,25 @@ def ask_expense():
         else:
             print('Invalid Input. Please enter the amount using digits only.')
     return user_expense
+
+def get_worksheet_column(working_sheet):
+    """
+    Retrieves all columns from the spreadsheets based on the month the user chose.
+    """
+    columns = []
+    sheet = SHEET.worksheet(working_sheet)
+    for col in range(3,9):
+        column = sheet.col_values(col)
+        columns.append(column[1:])
+    print(columns)
+    get_category_cell()
+    return columns
+
+def get_category_cell():
+    """
+    Retrieves the cell from the worksheet columns based on the category the user chose.
+    """
+    print('getting cell...')
 
 def main():
     print_intro()
