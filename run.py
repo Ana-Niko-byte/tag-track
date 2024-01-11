@@ -46,6 +46,9 @@ EXPENSES = {
     6 : 'Other'
 }
 
+# List of headers in google sheets.
+COLUMNS = []
+
 CREDS = Credentials.from_service_account_file('creds.json')
 CREDS_SCOPE = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(CREDS_SCOPE)
@@ -149,9 +152,9 @@ def get_month_sheet(month_needed):
     """
     Fetches the worksheet based on the month the user chose. 
     """
-    print(f'fetching the {month_needed} worksheet...\n')
+    print(f'Fetching the {month_needed} worksheet...\n')
     month_worksheet = SHEET.worksheet(month_needed)
-    print(f'Got it! Keep going.\n')
+    print(f'Got it! Hold on while we fetch the next table...\n')
     return month_worksheet
 
 def ask_curr():
@@ -178,6 +181,7 @@ def ask_category():
     while True:
         cat = input('\nPlease choose a category: ')
         if validate_selection(cat, 6):
+            get_category_cell(cat)
             escape = quick_escape()
             if escape == '':
                 ask_expense(EXPENSES[int(cat)])
@@ -203,20 +207,20 @@ def get_worksheet_column(working_sheet):
     """
     Retrieves all columns from the spreadsheets based on the month the user chose.
     """
-    columns = []
     sheet = SHEET.worksheet(working_sheet)
+    # Avoid 'DATE' in spreadsheet + take into account indent of one cell in both axes. 
     for col in range(3,9):
         column = sheet.col_values(col)
-        columns.append(column[1:])
-    print(columns)
-    get_category_cell()
-    return columns
+        COLUMNS.append(column[1:])
+    return COLUMNS
 
-def get_category_cell():
+def get_category_cell(cat):
     """
     Retrieves the cell from the worksheet columns based on the category the user chose.
     """
-    print('getting cell...')
+    # As COLUMNS is a list, we need to subtract one to get the index of the correct cell.
+    cell = COLUMNS[int(cat) - 1]
+    return cell
 
 def main():
     print_intro()
