@@ -13,18 +13,18 @@ SCOPE = [
 ]
 # Months the user can select when logging an expense. 
 MONTHS = {
-        1 : 'January',
-        2 : 'February', 
-        3 : 'March', 
-        4 : 'April', 
-        5 : 'May', 
-        6 : 'June', 
-        7 : 'July', 
-        8 : 'August', 
-        9 : 'September', 
-        10 : 'October', 
-        11 : 'November',
-        12 : 'December'
+    1 : 'January',
+    2 : 'February', 
+    3 : 'March', 
+    4 : 'April', 
+    5 : 'May', 
+    6 : 'June', 
+    7 : 'July', 
+    8 : 'August', 
+    9 : 'September', 
+    10 : 'October', 
+    11 : 'November',
+    12 : 'December'
     }
 
 # Currency the user can select for logging an expense. 
@@ -56,8 +56,8 @@ def print_intro():
     Prints large heading. 
     """
     text = text2art('Tag - Tracker')
-    print(Fore.GREEN + 'Welcome to')
-    print(Fore.GREEN + text + Fore.RESET)
+    print(Fore.CYAN + 'Welcome to')
+    print(Fore.CYAN + text + Fore.RESET)
 
 def quick_escape():
     """
@@ -139,9 +139,19 @@ def ask_month():
     while True:
         month = input('\nPlease choose the month you want to log for: ')
         if validate_selection(month, 12):
+            get_month_sheet(MONTHS[int(month)])
             ask_curr()
             break
     return month
+
+def get_month_sheet(month_needed):
+    """
+    Fetches the worksheet based on the month the user chose. 
+    """
+    print(f'fetching the {month_needed} worksheet...\n')
+    month_worksheet = SHEET.worksheet(month_needed)
+    print(f'Got it! Keep going.\n')
+    return month_worksheet
 
 def ask_curr():
     """
@@ -186,6 +196,7 @@ def ask_expense():
             break
         else:
             print('Invalid Input. Please enter the amount using digits only.')
+    return user_expense
 
 def main():
     print_intro()

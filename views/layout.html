@@ -16,7 +16,6 @@
             flex-flow: column nowrap;
             justify-content: center;
             align-items: center;
-            background-image: linear-gradient(light-green, dark-green);
         }
 
         /**
@@ -49,7 +48,8 @@
         .xterm .xterm-helper-textarea {
             padding: 0;
             border: 0;
-            margin: 0;
+            /* This had a value of 0 */
+            margin: 20px;
             /* Move textarea out of the screen to the far left, so that the cursor is not visible */
             position: absolute;
             opacity: 0;
