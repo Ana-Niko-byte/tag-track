@@ -55,6 +55,7 @@ SHEET = GSPREAD_CLIENT.open('Tag-Track')
 # List of read-only headers from google sheets. These are used in user-feedback throughout the application. 
 COLUMNS = []
 # List of global variables - user_gsheet -> google sheet, user_budget -> user budget for the month. 
+user_month = None
 user_gsheet = None
 user_budget = None
 user_expenses = []
@@ -68,6 +69,7 @@ def print_intro():
     print(Fore.LIGHTGREEN_EX + text + Fore.RESET)
 
 # _________ Beginning of shared functionalities, called throughout the application.
+    
 def quick_escape():
     """
     Allow users to exit the log or continue in the application
@@ -84,7 +86,6 @@ def quick_escape():
             break
         else:
             print(f'❌ Invalid input. You entered {user_escape}. Please try again.')
-            return False
     return user_escape
 
 def validate_string(string):
@@ -158,7 +159,9 @@ def ask_month():
     """
     create_table(MONTHS, 'Month')
     while True:
+        global user_month
         month = input('\n➤ Please choose the month you want to log for: ')
+        user_month = month
         if validate_selection(month, 12):
             month_name = MONTHS[int(month)]
             print(f'\n✅ You have chosen {month_name}.')
@@ -199,7 +202,9 @@ def format_budget(curr, budget):
     """
     # Code taken from Currency example on (https://pypi.org/project/currencies/).
     currency = Currency(CURRENCY[int(curr)])
+    global user_budget
     formatted_budget = currency.get_money_format(budget)
+    user_budget = formatted_budget
     print(f'✅ Budget: {formatted_budget}')
     return format_budget
 
@@ -244,6 +249,8 @@ def ask_expense(category):
         expense_msg = f'\n➤ Please enter the amount you spent on {category}: '
         user_expense = input(expense_msg)
         global user_expenses
+        global user_month
+        global user_budget
         if validate_num_selection(user_expense):
             print('✅ Updating your expense log...')
             # Push the expense into the global user_expenses list.
@@ -252,6 +259,7 @@ def ask_expense(category):
             if continue_expenses():
                 return ask_category()
             else:
+                create_expense(user_month, user_budget)
                 break
             # update_expenses(user_gsheet, category, user_expense)
         else:
@@ -269,6 +277,21 @@ def continue_expenses():
             return False
         else:
             print(f'❌ Invalid input. You entered {user_answer}. Please try again.')
+
+def create_expense(month, budget, colour = 'light_green'):
+    """
+    Creates final table to display all user input.
+    """
+    # Assign PrettyTable object to month_table.
+    table = PrettyTable()
+    # Assign headings and iterate over each value in defined tuples to append to the table.
+    table.field_names = [colored(f'Expenses for {MONTHS[int(month)]}', colour), colored(f'{MONTHS[int(month)]}\'s budget: {budget}', colour)]
+    global user_expenses
+    for list_expense in user_expenses:
+        category, amount = list_expense
+        table.add_row([colored(category, 'white'), colored(amount, 'white')])
+        table.align = 'l'
+    print(f'\n{table}')
 
 # def calculate_budget_remaindere():
 #     global user_budget
