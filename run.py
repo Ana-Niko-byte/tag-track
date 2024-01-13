@@ -4,6 +4,7 @@ from art import *
 from colorama import Fore
 from prettytable import PrettyTable
 from termcolor import colored
+from currencies import Currency
 
 # Scope of application credentials, code and links taken from love-sandwiches project.
 SCOPE = [
@@ -46,22 +47,26 @@ EXPENSES = {
     6 : 'Other'
 }
 
-# List of headers in google sheets.
-COLUMNS = []
-
 CREDS = Credentials.from_service_account_file('creds.json')
 CREDS_SCOPE = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(CREDS_SCOPE)
 SHEET = GSPREAD_CLIENT.open('Tag-Track')
+
+# List of read-only headers from google sheets. These are used in user-feedback throughout the application. 
+COLUMNS = []
+# List of global variables - user_gsheet -> google sheet, user_budget -> user budget for the month. 
+user_gsheet = None
+user_budget = None
 
 def print_intro():
     """
     Prints large heading. 
     """
     text = text2art('Tag - Tracker')
-    print(Fore.CYAN + 'Welcome to')
-    print(Fore.CYAN + text + Fore.RESET)
+    print(Fore.LIGHTGREEN_EX + 'Welcome to')
+    print(Fore.LIGHTGREEN_EX + text + Fore.RESET)
 
+# _________ Beginning of shared functionalities, called throughout the application.
 def quick_escape():
     """
     Allow users to exit the log or continue in the application
@@ -71,7 +76,7 @@ def quick_escape():
         escape_msg = '\n➤ Please press "Enter" to continue or type "q" to quit...'
         user_escape = input(escape_msg)
         if user_escape == 'q':
-            print('exit')
+            print(f'👋 You pressed "q". Exiting...')
             break
         # 'Enter' gives an empty string so we check for this instead.
         elif user_escape == '':
@@ -86,13 +91,22 @@ def validate_string(string):
     Validates any string input for alphabet-only characters. 
     Returns true if no digits or symbols are present. 
     """
-    return string.isalpha()
+    if not string:
+        print('❌ Please enter a value to begin.\n')
+    elif not all(letter.isalpha() for letter in string.split()):
+        print('❌ Why you using digits, bro?\n')
+    else:
+        return True
 
 def validate_num_selection(num):
     """
     Validates any number input. 
     Returns true if no digits or symbols are present. 
     """
+    if not num:
+        print('❌ Please enter a value to begin.\n')
+    elif not all(digit.isdigit() for digit in num.split()):
+        print('❌ Why you not using digits only, bro?\n')
     return num.isdigit()
 
 def validate_selection(selection, num_range, min_num_range = 0):
@@ -103,7 +117,7 @@ def validate_selection(selection, num_range, min_num_range = 0):
         if int(selection) > min_num_range and int(selection) <= num_range:
             return True
         else:
-            print('❌ Invalid input. Please choose one of the options provided.')
+            print(f'❌ Invalid input. Please choose one of the {num_range} options provided.')
             return False
     else:
         return False
@@ -120,6 +134,7 @@ def create_table(value, heading, colour = 'light_green'):
         table.add_row([colored(num, 'white'), colored(parameter, 'white')])
         table.align = 'l'
     print(f'\n{table}')
+# _________ End of shared functionalities.
 
 def ask_name():
     """
@@ -127,9 +142,10 @@ def ask_name():
     Once valid, the user is asked to selected a month from the provided list. 
     """
     while True:
-        name = input('➤ Please tell me your name: ')
+        name = input('➤ Please tell me your name: ').strip()
         if validate_string(name):
-            print('✅')
+            capitalised = name.capitalize()
+            print(f'\n✅ Hey, {capitalised}!')
             ask_month()
             break
     return name
@@ -143,21 +159,22 @@ def ask_month():
     while True:
         month = input('\n➤ Please choose the month you want to log for: ')
         if validate_selection(month, 12):
-            print('✅')
-            get_month_sheet(MONTHS[int(month)])
-            get_worksheet_column(MONTHS[int(month)])
+            month_name = MONTHS[int(month)]
+            print(f'\n✅ You have chosen {month_name}.')
+            get_month_sheet(month_name)
             ask_curr()
             break
-    return month
+    return month_name
 
 def get_month_sheet(month_needed):
     """
     Fetches the worksheet based on the month the user chose. 
     """
     print(f'Fetching the {month_needed} worksheet...\n')
-    month_worksheet = SHEET.worksheet(month_needed)
+    global user_gsheet 
+    user_gsheet = SHEET.worksheet(month_needed)
     print(f'Got it! Hold on while we fetch the next table...\n')
-    return month_worksheet
+    return user_gsheet
 
 def ask_curr():
     """
@@ -168,24 +185,49 @@ def ask_curr():
     while True:
         curr = input('\n➤ Please choose the currency you wish to log in: ')
         if validate_selection(curr, 5):
-            print('✅')
+            print(f'✅ You have chosen to log in {CURRENCY[int(curr)]}')
             escape = quick_escape()
             if escape == '':
-                ask_category()
+                ask_budget(curr)
             break
     return curr
+
+def format_budget(curr, budget):
+    """
+    Formats the user's budget with the chosen currency symbol. 
+    """
+    # Code taken from Currency example on (https://pypi.org/project/currencies/).
+    currency = Currency(CURRENCY[int(curr)])
+    formatted_budget = currency.get_money_format(budget)
+    print(f'✅ Budget: {formatted_budget}')
+    return format_budget
+
+def ask_budget(curr):
+    """
+    Asks user for budget and updates global budget variable.
+    If valid input, asks user if they wish to continue. 
+    """
+    budget = input('\n➤ Please input your budget for this month: ')
+    if validate_num_selection(budget):
+        global user_budget
+        user_budget = budget
+        format_budget(curr, user_budget)
+        create_table(EXPENSES, 'Expense Category', colour = 'magenta')
+        ask_category()
+    return user_budget
 
 def ask_category():
     """
     Asks user to select one of the options in the category table for logging expenses. 
     If valid input, asks user if they wish to continue. 
     """
-    create_table(EXPENSES, 'Expense Category', colour = 'magenta')
     while True:
         cat = input('\n➤ Please choose a category: ')
         if validate_selection(cat, 6):
-            print('✅')
-            get_category_cell(cat)
+            if int(cat) == 1 or int(cat) == 2:
+                print(f'✅ Ouch...spending on {EXPENSES[int(cat)]}...')
+            elif int(cat) > 2 and int(cat) != 6:
+                print(f'✅ Ooo...spending on {EXPENSES[int(cat)]}? Nice!')
             escape = quick_escape()
             if escape == '':
                 ask_expense(EXPENSES[int(cat)])
@@ -201,33 +243,15 @@ def ask_expense(category):
         expense_msg = f'\n➤ Please enter the amount you spent on {category}: '
         user_expense = input(expense_msg)
         if validate_num_selection(user_expense):
-            print('✅')
-            print('valid number input')
+            print('✅ Updating your expense log...')
+            # update_expenses(user_gsheet, category, user_expense)
             break
         else:
             print('❌ Invalid Input. Please enter the amount using digits only.')
     return user_expense
 
-def get_worksheet_column(working_sheet):
-    """
-    Retrieves all columns from the spreadsheets based on the month the user chose.
-    """
-    sheet = SHEET.worksheet(working_sheet)
-    # Avoid 'DATE' in spreadsheet + take into account indent of one cell in both axes. 
-    for col in range(3,9):
-        column = sheet.col_values(col)
-        COLUMNS.append(column[1:])
-    return column
-
-def get_category_cell(cat):
-    """
-    Retrieves the cell from the worksheet columns based on the category the user chose.
-    """
-    # As COLUMNS is a list, we need to subtract one to get the index of the correct cell.
-    cell = COLUMNS[int(cat) - 1]
-    return cell
-
 def main():
     print_intro()
     ask_name()
+    print(f'global : {user_gsheet}')
 main()
