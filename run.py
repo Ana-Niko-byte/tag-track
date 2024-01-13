@@ -57,6 +57,7 @@ COLUMNS = []
 # List of global variables - user_gsheet -> google sheet, user_budget -> user budget for the month. 
 user_gsheet = None
 user_budget = None
+user_expenses = []
 
 def print_intro():
     """
@@ -212,7 +213,6 @@ def ask_budget(curr):
         global user_budget
         user_budget = budget
         format_budget(curr, user_budget)
-        create_table(EXPENSES, 'Expense Category', colour = 'magenta')
         ask_category()
     return user_budget
 
@@ -221,6 +221,7 @@ def ask_category():
     Asks user to select one of the options in the category table for logging expenses. 
     If valid input, asks user if they wish to continue. 
     """
+    create_table(EXPENSES, 'Expense Category', colour = 'magenta')
     while True:
         cat = input('\n➤ Please choose a category: ')
         if validate_selection(cat, 6):
@@ -242,33 +243,44 @@ def ask_expense(category):
     while True:
         expense_msg = f'\n➤ Please enter the amount you spent on {category}: '
         user_expense = input(expense_msg)
+        global user_expenses
         if validate_num_selection(user_expense):
             print('✅ Updating your expense log...')
+            # Push the expense into the global user_expenses list.
+            user_expenses.append([category, user_expense])
+            print(user_expenses)
+            if continue_expenses():
+                return ask_category()
+            else:
+                break
             # update_expenses(user_gsheet, category, user_expense)
-            break
         else:
             print('❌ Invalid Input. Please enter the amount using digits only.')
     return user_expense
 
-# def get_worksheet_columns(working_sheet):
-#     """
-#     Retrieves all columns from the spreadsheets based on the month the user chose and appends them to the COLUMNS list.
-#     """
-#     sheet = SHEET.worksheet(working_sheet)
-#     # Avoid 'DATE' in spreadsheet + take into account indent of one cell in both axes. 
-#     for col in range(3,9):
-#         column = sheet.col_values(col)
-#         COLUMNS.append(column[1:])
-#     return column
+def continue_expenses():
+    while True:
+        expense_message = '\n➤ Please press "a" to add another expense, or "c" to continue.'
+        user_answer = input(expense_message)
+        if user_answer == 'a':
+            return True
+        elif user_answer == 'c':
+            print('Continuing...')
+            return False
+        else:
+            print(f'❌ Invalid input. You entered {user_answer}. Please try again.')
 
-def update_expenses(sheet, column_category, expense):
-    print(f'updating {column_category} with {expense} for {sheet}...')
-    column_index = list(EXPENSES.keys())[list(EXPENSES.values()).index(column_category)]
-    column_letter = chr(65 + column_index)
-    column_values = sheet.col_values(column_index + 1)  # +1 because gspread is 1-indexed
-    first_empty_row = len(column_values) + 1
-    sheet.update_acell(f'{column_letter}{first_empty_row}', expense)
-    
+# def calculate_budget_remaindere():
+#     global user_budget
+
+# def update_expenses(sheet, column_category, expense):
+#     print(f'updating {column_category} with {expense} for {sheet}...')
+#     column_index = list(EXPENSES.keys())[list(EXPENSES.values()).index(column_category)]
+#     column_letter = chr(65 + column_index)
+#     column_values = sheet.col_values(column_index + 1)  # +1 because gspread is 1-indexed
+#     first_empty_row = len(column_values) + 1
+#     sheet.update_acell(f'{column_letter}{first_empty_row}', expense)
+
 def main():
     print_intro()
     ask_name()
