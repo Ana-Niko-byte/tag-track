@@ -106,4 +106,5 @@ Below is the flowchart for the application. Noted is the general flow of the app
 # Deployment
 # Future Development
 # Credits
+- [Currencies](https://pypi.org/project/currencies/) (Research and two lines of logic).
 # Acknowledgements

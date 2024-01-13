@@ -250,6 +250,25 @@ def ask_expense(category):
             print('❌ Invalid Input. Please enter the amount using digits only.')
     return user_expense
 
+# def get_worksheet_columns(working_sheet):
+#     """
+#     Retrieves all columns from the spreadsheets based on the month the user chose and appends them to the COLUMNS list.
+#     """
+#     sheet = SHEET.worksheet(working_sheet)
+#     # Avoid 'DATE' in spreadsheet + take into account indent of one cell in both axes. 
+#     for col in range(3,9):
+#         column = sheet.col_values(col)
+#         COLUMNS.append(column[1:])
+#     return column
+
+def update_expenses(sheet, column_category, expense):
+    print(f'updating {column_category} with {expense} for {sheet}...')
+    column_index = list(EXPENSES.keys())[list(EXPENSES.values()).index(column_category)]
+    column_letter = chr(65 + column_index)
+    column_values = sheet.col_values(column_index + 1)  # +1 because gspread is 1-indexed
+    first_empty_row = len(column_values) + 1
+    sheet.update_acell(f'{column_letter}{first_empty_row}', expense)
+    
 def main():
     print_intro()
     ask_name()
