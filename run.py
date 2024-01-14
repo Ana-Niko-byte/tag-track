@@ -75,9 +75,9 @@ def quick_escape():
     """
     Allow users to exit the log or continue in the application
     """
-    print('\nCheckpoint!')
+    print('\n⚠️  Checkpoint!⚠️')
     while True:
-        escape_msg = '\n➤ Please press "Enter" to continue or type "q" to quit...'
+        escape_msg = '➤ Please press "Enter" to continue or type "q" to quit...'
         user_escape = input(escape_msg)
         if user_escape == 'q':
             print(f'👋 You pressed "q". Exiting...')
@@ -214,16 +214,21 @@ def ask_budget():
     Asks user for budget and updates global budget variable.
     If valid input, asks user if they wish to continue. 
     """
-    budget = input('\n➤ Please input your budget for this month: ')
-    if validate_num_selection(budget):
-        global user_currency
-        global user_budget
-        currency_format = format_expenses(user_currency, budget)
-        formatted_budget = currency_format
-        print(f'✅ Budget: {formatted_budget}')
-        user_budget = formatted_budget
-        ask_category()
-    return user_budget
+    while True:
+        budget = input('\n➤ Please input your budget for this month: ')
+        if budget != '':
+            if validate_num_selection(budget):
+                global user_currency
+                global user_budget
+                currency_format = format_expenses(user_currency, budget)
+                formatted_budget = currency_format
+                print(f'✅ Budget: {formatted_budget}')
+                user_budget = formatted_budget
+                ask_category()
+        else:
+            print(f'Please enter your budget for the month of {MONTHS[int(user_month)]}')
+            return False
+        return user_budget
 
 def ask_category():
     """
@@ -233,15 +238,18 @@ def ask_category():
     create_table(EXPENSES, 'Expense Category')
     while True:
         cat = input('\n➤ Please choose a category: ')
-        if validate_selection(cat, 6):
-            if int(cat) == 1 or int(cat) == 2:
-                print(f'✅ Ouch...spending on {EXPENSES[int(cat)]}...')
-            elif int(cat) > 2 and int(cat) != 6:
-                print(f'✅ Ooo...spending on {EXPENSES[int(cat)]}? Nice!')
-            escape = quick_escape()
-            if escape == '':
-                ask_expense(EXPENSES[int(cat)])
-            break
+        if cat != '':
+            if validate_selection(cat, 6):
+                if int(cat) == 1 or int(cat) == 2:
+                    print(f'✅ Ouch...spending on {EXPENSES[int(cat)]}...')
+                elif int(cat) > 2 and int(cat) != 6:
+                    print(f'✅ Ooo...spending on {EXPENSES[int(cat)]}? Nice!')
+                escape = quick_escape()
+                if escape == '':
+                    ask_expense(EXPENSES[int(cat)])
+                break
+        else:
+            print('❌ Please choose a category to log an expense.')
     return cat
     
 def ask_expense(category):
