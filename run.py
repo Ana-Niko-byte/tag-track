@@ -58,6 +58,7 @@ COLUMNS = []
 user_month = None
 user_gsheet = None
 user_budget = None
+user_currency = None
 user_expenses = []
 
 def print_intro():
@@ -107,9 +108,10 @@ def validate_num_selection(num):
     """
     if not num:
         print('❌ Please enter a value to begin.\n')
-    elif not all(digit.isdigit() for digit in num.split()):
+        # Allow decimal point values.
+    elif not all(float(digit) for digit in num.split()):
         print('❌ Why you not using digits only, bro?\n')
-    return num.isdigit()
+    return float(num)
 
 def validate_selection(selection, num_range, min_num_range = 0):
     """
@@ -189,35 +191,37 @@ def ask_curr():
     while True:
         curr = input('\n➤ Please choose the currency you wish to log in: ')
         if validate_selection(curr, 5):
+            global user_currency
+            user_currency = curr
             print(f'✅ You have chosen to log in {CURRENCY[int(curr)]}')
             escape = quick_escape()
             if escape == '':
-                ask_budget(curr)
+                ask_budget()
             break
     return curr
 
-def format_budget(curr, budget):
+def format_expenses(curr, expense):
     """
-    Formats the user's budget with the chosen currency symbol. 
+    Formats the user's expenses with the chosen currency symbol. 
     """
     # Code taken from Currency example on (https://pypi.org/project/currencies/).
     currency = Currency(CURRENCY[int(curr)])
-    global user_budget
-    formatted_budget = currency.get_money_format(budget)
-    user_budget = formatted_budget
-    print(f'✅ Budget: {formatted_budget}')
-    return format_budget
+    formatted_expense = currency.get_money_format(expense)
+    return formatted_expense
 
-def ask_budget(curr):
+def ask_budget():
     """
     Asks user for budget and updates global budget variable.
     If valid input, asks user if they wish to continue. 
     """
     budget = input('\n➤ Please input your budget for this month: ')
     if validate_num_selection(budget):
+        global user_currency
         global user_budget
-        user_budget = budget
-        format_budget(curr, user_budget)
+        currency_format = format_expenses(user_currency, budget)
+        formatted_budget = currency_format
+        print(f'✅ Budget: {formatted_budget}')
+        user_budget = formatted_budget
         ask_category()
     return user_budget
 
@@ -226,7 +230,7 @@ def ask_category():
     Asks user to select one of the options in the category table for logging expenses. 
     If valid input, asks user if they wish to continue. 
     """
-    create_table(EXPENSES, 'Expense Category', colour = 'magenta')
+    create_table(EXPENSES, 'Expense Category')
     while True:
         cat = input('\n➤ Please choose a category: ')
         if validate_selection(cat, 6):
@@ -278,23 +282,46 @@ def continue_expenses():
         else:
             print(f'❌ Invalid input. You entered {user_answer}. Please try again.')
 
+def check_list():
+    """
+    Checks the user's logged expenses list for duplicate categories. 
+    If found, merges and adds their expense values together.
+    """
+    # Gets the logged expenses - these may contain duplicates if user logs one category more than once.
+    global user_expenses
+    duplicates = {}
+    for item in user_expenses:
+        cat, value = item
+        # Checks if the category (key) is already in the duplicates dictionary.
+        if cat in duplicates:
+            # If it is, it adds the values together.
+            duplicates[cat] += float(value)
+        else:
+            # Adds the key and value to the dictionary.
+            duplicates[cat] = float(value)
+    return duplicates
+
 def create_expense(month, budget, colour = 'light_green'):
     """
     Creates final table to display all user input.
     """
     # Assign PrettyTable object to month_table.
     table = PrettyTable()
-    # Assign headings and iterate over each value in defined tuples to append to the table.
-    table.field_names = [colored(f'Expenses for {MONTHS[int(month)]}', colour), colored(f'{MONTHS[int(month)]}\'s budget: {budget}', colour)]
-    global user_expenses
-    for list_expense in user_expenses:
-        category, amount = list_expense
-        table.add_row([colored(category, 'white'), colored(amount, 'white')])
+    # Assign headings and colours to the table.
+    table.field_names = [
+        colored(f'Expenses for {MONTHS[int(month)]}', colour), 
+        colored(f'{MONTHS[int(month)]}\'s budget: {budget}', colour)
+        ]
+    # Gets the returned dictionary value so the table doesn't display duplicate categories.
+    validated_cat_expenses = check_list()
+    for list_category, list_expense in validated_cat_expenses.items():
+        formatted_expense = format_expenses(user_currency, list_expense)
+        table.add_row([colored(list_category, 'white'), colored(formatted_expense, 'white')])
         table.align = 'l'
     print(f'\n{table}')
 
-# def calculate_budget_remaindere():
-#     global user_budget
+def calculate_budget_remainder():
+    pass
 
 # def update_expenses(sheet, column_category, expense):
 #     print(f'updating {column_category} with {expense} for {sheet}...')
