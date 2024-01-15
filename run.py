@@ -58,6 +58,7 @@ COLUMNS = []
 user_month = None
 user_gsheet = None
 user_budget = None
+user_budget_remainder = None
 user_currency = None
 user_expenses = []
 
@@ -273,12 +274,14 @@ def ask_expense(category):
             else:
                 create_expense(user_month, user_budget)
                 break
-            # update_expenses(user_gsheet, category, user_expense)
         else:
             print('❌ Invalid Input. Please enter the amount using digits only.')
     return user_expense
 
 def continue_expenses():
+    """
+    Loop to ask the user if they want to log another expense, with validation. 
+    """
     while True:
         expense_message = '\n➤ Please press "a" to add another expense, or "c" to continue.'
         user_answer = input(expense_message)
@@ -317,7 +320,7 @@ def create_expense(month, budget, colour = 'light_green'):
     table = PrettyTable()
     # Assign headings and colours to the table.
     table.field_names = [
-        colored(f'Expenses for {MONTHS[int(month)]}', colour), 
+        colored(f'Expenses for {MONTHS[int(month)]}', colour),
         colored(f'{MONTHS[int(month)]}\'s budget: {budget}', colour)
         ]
     # Gets the returned dictionary value so the table doesn't display duplicate categories.
@@ -326,18 +329,34 @@ def create_expense(month, budget, colour = 'light_green'):
         formatted_expense = format_expenses(user_currency, list_expense)
         table.add_row([colored(list_category, 'white'), colored(formatted_expense, 'white')])
         table.align = 'l'
+    
+    calculate_budget_remainder()
+    table.add_row(['-----------------------', '-----------------------'])
+    table.add_row([colored('Remaining budget', 'red'), colored(user_budget_remainder, 'red')])
     print(f'\n{table}')
 
 def calculate_budget_remainder():
-    pass
+    # Get the unformatted version of budget.
+    global user_budget
+    unformatted_budget = []
+    for symbol in user_budget:
+        if symbol.isdigit():
+            unformatted_budget.append(symbol)
 
-# def update_expenses(sheet, column_category, expense):
-#     print(f'updating {column_category} with {expense} for {sheet}...')
-#     column_index = list(EXPENSES.keys())[list(EXPENSES.values()).index(column_category)]
-#     column_letter = chr(65 + column_index)
-#     column_values = sheet.col_values(column_index + 1)  # +1 because gspread is 1-indexed
-#     first_empty_row = len(column_values) + 1
-#     sheet.update_acell(f'{column_letter}{first_empty_row}', expense)
+    unformatted_budget = ''.join(unformatted_budget)
+
+    # Now get the total of the user's expenses and calculate the remainder.
+    global user_expenses
+    added_expenses = 0
+    for list in user_expenses:
+        added_expenses += float(list[1])
+    
+    added_expenses = str(added_expenses)
+    remainder = float(unformatted_budget) - float(added_expenses)
+    # Update the global variable for the remainder.
+    global user_budget_remainder
+    rounded_remainder = round(remainder, 2)
+    user_budget_remainder = format_expenses(user_currency, rounded_remainder)
 
 def main():
     print_intro()

@@ -1,7 +1,7 @@
 # Tag Track
 This application allows users to track their monthly expenses on a budget basis. The application presents a number of categories to the user, used to log expenses in an organised manner. These categories are classed as 'necessity' and 'luxury'. After logging their expenses, the user can view a summary of their budget on a Google sheets spread.  
 
-The application is available for viewing [here]().
+The application is available for viewing [here](https://tag-track-cc45575f1826.herokuapp.com/).
 The Google Sheets for this application is available for use [here](https://docs.google.com/spreadsheets/d/1kGdwNqPvyRYIRL4LbEy-CgS1YDIHI6uKYHOG7gMbuB8/edit#gid=1925370965).
 
 ![reponsive UI]()
@@ -11,7 +11,6 @@ The Google Sheets for this application is available for use [here](https://docs.
 - Provide a clear way of showing the (im)balance of certain spending habits, and the effect this has on monthly budgets. 
 - Create a Google Sheet (database of sorts) with all tracked expenses so the user can refer back to them after logging. 
 - Create an advice generator based on individual spending conditions. 
-
 
 # User Stories
 - As a first time user, I want an intuitive and easy-to-understand UI. 
