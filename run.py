@@ -61,6 +61,7 @@ user_budget = None
 user_budget_remainder = None
 user_currency = None
 user_expenses = []
+non_duplicated_user_expenses = {}
 
 def print_intro():
     """
@@ -298,7 +299,7 @@ def continue_expenses():
         if user_answer == 'a':
             return True
         elif user_answer == 'c':
-            print('Continuing...')
+            print('✅ Printing your expense log...')
             return False
         else:
             print(f'❌ Invalid input. You entered {user_answer}. Please try again.')
@@ -320,6 +321,9 @@ def check_list():
         else:
             # Adds the key and value to the dictionary.
             duplicates[cat] = float(value)
+    # Re-assign the global variable the value of duplicates (used to update the Google Sheet logs).
+    global non_duplicated_user_expenses
+    non_duplicated_user_expenses = duplicates
     return duplicates
 
 def create_expense(month, budget, colour = 'light_green'):
@@ -354,19 +358,13 @@ def calculate_budget_remainder():
             unformatted_budget.append(symbol)
 
     unformatted_budget = ''.join(unformatted_budget)
-
-    # Now get the total of the user's expenses and calculate the remainder.
-    global user_expenses
-    added_expenses = 0
-    for list in user_expenses:
-        added_expenses += float(list[1])
-    
-    added_expenses = str(added_expenses)
-    remainder = float(unformatted_budget) - float(added_expenses)
+    # Get the total of the user's expenses.
+    total = sum(non_duplicated_user_expenses.values())
+    total = str(total)
+    remainder = round(float(unformatted_budget) - float(total), 2)
     # Update the global variable for the remainder.
     global user_budget_remainder
-    rounded_remainder = round(remainder, 2)
-    user_budget_remainder = format_expenses(user_currency, rounded_remainder)
+    user_budget_remainder = format_expenses(user_currency, remainder)
 
 def main():
     print_intro()
