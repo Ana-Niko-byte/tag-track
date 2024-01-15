@@ -109,10 +109,17 @@ def validate_num_selection(num):
     """
     if not num:
         print('❌ Please enter a value to begin.\n')
+        return False
         # Allow decimal point values.
-    elif not all(float(digit) for digit in num.split()):
-        print('❌ Why you not using digits only, bro?\n')
-    return float(num)
+    try:
+        if not all(float(digit) for digit in num.split()):
+            print('❌ Why you not using digits only, bro?\n')
+            return False
+        else:
+            return float(num)
+    except ValueError:
+        print(f'❌ Invalid input. \n👉 Please use digits only.')
+        return False
 
 def validate_selection(selection, num_range, min_num_range = 0):
     """
@@ -163,7 +170,8 @@ def ask_month():
     create_table(MONTHS, 'Month')
     while True:
         global user_month
-        month = input('\n➤ Please choose the month you want to log for: ')
+        print('\n(💡 Type the \'No.\' that corresponds to the Month you want ;))')
+        month = input('➤ Please choose the month you want to log for: ')
         user_month = month
         if validate_selection(month, 12):
             month_name = MONTHS[int(month)]
@@ -190,7 +198,8 @@ def ask_curr():
     """
     create_table(CURRENCY, 'Currency')
     while True:
-        curr = input('\n➤ Please choose the currency you wish to log in: ')
+        print('\n(💡 Type the \'No.\' that corresponds to the Currency you want ;))')
+        curr = input('➤ Please choose the currency you wish to log in: ')
         if validate_selection(curr, 5):
             global user_currency
             user_currency = curr
@@ -216,20 +225,20 @@ def ask_budget():
     If valid input, asks user if they wish to continue. 
     """
     while True:
-        budget = input('\n➤ Please input your budget for this month: ')
-        if budget != '':
-            if validate_num_selection(budget):
-                global user_currency
-                global user_budget
-                currency_format = format_expenses(user_currency, budget)
-                formatted_budget = currency_format
-                print(f'✅ Budget: {formatted_budget}')
-                user_budget = formatted_budget
-                ask_category()
-        else:
-            print(f'Please enter your budget for the month of {MONTHS[int(user_month)]}')
-            return False
-        return user_budget
+        budget = input(f'\n➤ Please enter your budget for {MONTHS[int(user_month)]}: ')
+        if budget == '':
+            print('❌ Please enter your budget to continue.')
+            continue
+        elif validate_num_selection(budget):
+            global user_currency
+            global user_budget
+            # Format the budget output to the user in their chosen currency.
+            formatted_budget = format_expenses(user_currency, budget)
+            print(f'✅ Budget: {formatted_budget}')
+            # Update the global variable with the format.
+            user_budget = formatted_budget
+            ask_category()
+            return user_budget
 
 def ask_category():
     """
@@ -238,19 +247,20 @@ def ask_category():
     """
     create_table(EXPENSES, 'Expense Category')
     while True:
-        cat = input('\n➤ Please choose a category: ')
-        if cat != '':
-            if validate_selection(cat, 6):
-                if int(cat) == 1 or int(cat) == 2:
-                    print(f'✅ Ouch...spending on {EXPENSES[int(cat)]}...')
-                elif int(cat) > 2 and int(cat) != 6:
-                    print(f'✅ Ooo...spending on {EXPENSES[int(cat)]}? Nice!')
-                escape = quick_escape()
-                if escape == '':
-                    ask_expense(EXPENSES[int(cat)])
-                break
-        else:
+        print('\n(💡 Type the \'No.\' that corresponds to the Category you want ;))')
+        cat = input('➤ Please choose a category: ')
+        if cat == '':
             print('❌ Please choose a category to log an expense.')
+            continue
+        elif validate_selection(cat, 6):
+            if int(cat) == 1 or int(cat) == 2:
+                print(f'✅ Ouch...spending on {EXPENSES[int(cat)]}...')
+            elif int(cat) > 2 and int(cat) != 6:
+                print(f'✅ Ooo...spending on {EXPENSES[int(cat)]}? Nice!')
+            escape = quick_escape()
+            if escape == '':
+                ask_expense(EXPENSES[int(cat)])
+            break
     return cat
     
 def ask_expense(category):
@@ -264,18 +274,18 @@ def ask_expense(category):
         global user_expenses
         global user_month
         global user_budget
-        if validate_num_selection(user_expense):
+        if user_expense == '':
+            print(f'❌ Please enter your expenses for {category}')
+            continue
+        elif validate_num_selection(user_expense):
             print('✅ Updating your expense log...')
             # Push the expense into the global user_expenses list.
             user_expenses.append([category, user_expense])
-            print(user_expenses)
             if continue_expenses():
                 return ask_category()
             else:
                 create_expense(user_month, user_budget)
                 break
-        else:
-            print('❌ Invalid Input. Please enter the amount using digits only.')
     return user_expense
 
 def continue_expenses():
