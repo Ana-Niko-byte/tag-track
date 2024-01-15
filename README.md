@@ -12,6 +12,16 @@ The Google Sheets for this application is available for use [here](https://docs.
 - Create a Google Sheet (database of sorts) with all tracked expenses so the user can refer back to them after logging. 
 - Create an advice generator based on individual spending conditions. 
 
+
+# User Stories
+- As a first time user, I want an intuitive and easy-to-understand UI. 
+- As a first time user, I want clearly defined instructions to follow. 
+- As a first time user, I want to receive instant feedback on my inputs, with the option to exit and restart if I make a mistake. 
+- As a first time user, I want to see my expenses and my budget logged in one place, so I can make deductions myself. 
+- As a user, I want to be able to log several expenses at once, in different categories, and get the total I spent in each. 
+- As a user, I want to be able to visually tell when I have gone over my monthly budget. 
+- As a user, I want to be able to keep a record of my expenses on a monthly basis, so that I can refer back to them at a later stage. 
+
 # UX Goals
 As this project is backend-only, little can be done to make the UI attractive. However:
 - Create a clear terminal face incorporating spacing for maximum legibility comfort.
@@ -99,6 +109,22 @@ Below is the flowchart for the application. Noted is the general flow of the app
 # Technologies
 # Testing & Debugging
 #### Issues
+There were a few issues while the project was being developed, having mostly to do with string, integer and float use cases. In the image below, you can see the user's conclusive table, in which the month, budget, and expenses are detailed. 
+
+[Integer bug](docs/images/debugging.png)
+
+As in the current application, each category is detailed in a separate row. If the category was logged more than once by the user, the value of the expenses are added and appended to the existing category row. Before appending, the values are logged to a dictionary, detailing each of the individually logged expense values - and in one instance, as detailed in the _'Vehicle':'4324342'_ element. The issue is quite clear here - the expenses are pushed as strings and thus my attempt to add the values '432' and '432' resulted in '432432', instead of 864. This problem was fixed by converting the values into integers and then adding them (second image below, but with different values). 
+
+[Integer bug solution](docs/images/debugging-answer.png)
+
+Another more significant issue arose when trying to log values that had a decimal point as expenses, i.e. 69.99 for Online Shopping. Please see image below. 
+
+[Float bug](docs/images/digits-error.png)
+
+This would trigger my number validation function, which checked and returned if a given input isdigit(). This function was modified to instead check if a given input was a float, as this accepts both integer values (e.g., 20.0), and floats. Please see image below.
+
+[Float bug fix](docs/images/float-debugging-answer.png)
+
 ### Debugging
 # Accessibility & Performance
 ### Lighthouse
