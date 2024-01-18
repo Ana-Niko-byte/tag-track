@@ -345,9 +345,15 @@ def create_expense(month, budget, colour = 'light_green'):
         table.align = 'l'
     
     calculate_budget_remainder()
+    # Add separating rows to the table to differentiate final data.
     table.add_row(['-----------------------', '-----------------------'])
     table.add_row([colored('Remaining budget', 'red'), colored(user_budget_remainder, 'red')])
     print(f'\n{table}')
+    update = ask_update()
+    if update == 'a':
+        format_data()
+    else:
+        print('doing something else?')
 
 def calculate_budget_remainder():
     # Get the unformatted version of budget.
@@ -366,8 +372,39 @@ def calculate_budget_remainder():
     global user_budget_remainder
     user_budget_remainder = format_expenses(user_currency, remainder)
 
+def format_data():
+    print('formatting data...')
+
+def ask_update():
+    """
+    Asks user whether to update google sheets with their values or provide some advice for future spending.
+    """
+    while True:
+        update_msg = '\n➤ Type "u" to update Google sheets with your expenses, or "a" for financial advice...'
+        user_update = input(update_msg)
+        if user_update == 'u':
+            print('updating your worksheet...')
+            update_worksheet()
+            break
+        elif user_update == 'a':
+            print('here is some advice...')
+            break
+        else:
+            print('wrong')
+            continue
+
+def update_worksheet():
+    """
+    Updates relevant Google Sheets with user's expenses. 
+    """
+    sheet = user_gsheet
+    values = sheet.get_all_values()
+    expenses = [1, 2, 3, 4, 5, 6, 7]
+    sheet.append_row(expenses)
+    print(values)
+
+
 def main():
     print_intro()
     ask_name()
-    print(f'global : {user_gsheet}')
 main()
