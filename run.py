@@ -127,7 +127,7 @@ def validate_selection(selection, num_range, min_num_range = 0):
     Validates the selected input in conjunction with the validate_num_selection() function using a set number range.
     """
     if validate_num_selection(selection):
-        if int(selection) > min_num_range and int(selection) <= num_range:
+        if float(selection) > min_num_range and float(selection) <= num_range:
             return True
         else:
             print(f'❌ Invalid input. Please choose one of the {num_range} options provided.')
@@ -189,7 +189,7 @@ def get_month_sheet(month_needed):
     print(f'Fetching the {month_needed} worksheet...\n')
     global user_gsheet 
     user_gsheet = SHEET.worksheet(month_needed)
-    print(f'Got it! Hold on while we fetch the next table...\n')
+    print(f'✅ Got it!\n⌛ Hold on while we fetch the next table...\n')
     return user_gsheet
 
 def ask_curr():
@@ -279,7 +279,7 @@ def ask_expense(category):
             print(f'❌ Please enter your expenses for {category}')
             continue
         elif validate_num_selection(user_expense):
-            print('✅ Updating your expense log...')
+            print('✅ Thanks!\n⌛ Updating your expense log...')
             # Push the expense into the global user_expenses list.
             user_expenses.append([category, user_expense])
             if continue_expenses():
@@ -299,7 +299,7 @@ def continue_expenses():
         if user_answer == 'a':
             return True
         elif user_answer == 'c':
-            print('✅ Printing your expense log...')
+            print('✅ Thanks!\n⌛ Printing your expense log...')
             return False
         else:
             print(f'❌ Invalid input. You entered {user_answer}. Please try again.')
@@ -317,10 +317,10 @@ def check_list():
         # Checks if the category (key) is already in the duplicates dictionary.
         if cat in duplicates:
             # If it is, it adds the values together.
-            duplicates[cat] += float(value)
+            duplicates[cat] += round(float(value), 2)
         else:
             # Adds the key and value to the dictionary.
-            duplicates[cat] = float(value)
+            duplicates[cat] = round(float(value), 2)
     # Re-assign the global variable the value of duplicates (used to update the Google Sheet logs).
     global non_duplicated_user_expenses
     non_duplicated_user_expenses = duplicates
@@ -372,9 +372,6 @@ def calculate_budget_remainder():
     global user_budget_remainder
     user_budget_remainder = format_expenses(user_currency, remainder)
 
-def format_data():
-    print('formatting data...')
-
 def ask_update():
     """
     Asks user whether to update google sheets with their values or provide some advice for future spending.
@@ -383,26 +380,43 @@ def ask_update():
         update_msg = '\n➤ Type "u" to update Google sheets with your expenses, or "a" for financial advice...'
         user_update = input(update_msg)
         if user_update == 'u':
-            print('updating your worksheet...')
+            print('⌛ Updating your worksheet...')
             update_worksheet()
             break
         elif user_update == 'a':
             print('here is some advice...')
             break
         else:
-            print('wrong')
+            print(f'❌ Invalid input. You entered {user_update}. Please try again.')
             continue
+
+def format_data():
+    """
+    Formats data for the google sheet. 
+    """
+    format = {   
+    'Rent': '',
+    'Groceries': '', 
+    'Vehicle': '',
+    'Cafe/Restaurant': '',
+    'Online Shopping': '', 
+    'Other': ''
+    }
+    expenses = non_duplicated_user_expenses
+    for key, value in expenses.items():
+        if key in format:
+            format[key] = value
+    print(format)
+    return format
 
 def update_worksheet():
     """
     Updates relevant Google Sheets with user's expenses. 
     """
+    expenses = format_data()
     sheet = user_gsheet
-    values = sheet.get_all_values()
-    expenses = [1, 2, 3, 4, 5, 6, 7]
-    sheet.append_row(expenses)
-    print(values)
-
+    values_to_append = list(expenses.values())
+    sheet.append_row(values_to_append)
 
 def main():
     print_intro()
