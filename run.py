@@ -77,12 +77,12 @@ def quick_escape():
     """
     Allow users to exit the log or continue in the application
     """
-    print('\n⚠️  Checkpoint!⚠️')
+    print('\n⚠️  Checking in!⚠️\n If you\'ve made any errors - now is the time to exit and restart. Don\'t worry - nothing has been logged yet :) ')
     while True:
         escape_msg = '➤  Please press "Enter" to continue or type "q" to quit...'
         user_escape = input(escape_msg)
         if user_escape == 'q':
-            print(f'👋  You pressed "q". Exiting...')
+            print(f'\n👋  You pressed \'q\'. Exiting...')
             break
         # 'Enter' gives an empty string so we check for this instead.
         elif user_escape == '':
@@ -171,7 +171,7 @@ def ask_month():
     create_table(MONTHS, 'Month')
     while True:
         global user_month
-        print('\n(💡  Type the \'No.\' that corresponds to the Month you want ;))')
+        print('\n(💡  Type the \'No.\' that corresponds to the Month you want :) )')
         month = input('➤  Please choose the month you want to log for: ')
         user_month = month
         if validate_selection(month, 12):
@@ -241,12 +241,12 @@ def ask_budget():
             ask_category()
             return user_budget
         
-        
 def append_budget(budget):
     """
     Updates B1 of the respective google sheets with the value of the user's budget.
     """
     sheet = user_gsheet
+    # This will change any previously logged budget in the 'B1' cell. 
     sheet.update_acell('B1', budget)
 
 def ask_category():
@@ -256,7 +256,7 @@ def ask_category():
     """
     create_table(EXPENSES, 'Expense Category')
     while True:
-        print('\n(💡  Type the \'No.\' that corresponds to the Category you want ;))')
+        print('\n(💡  Type the \'No.\' that corresponds to the Category you want :) )')
         cat = input('➤  Please choose a category: ')
         if cat == '':
             print('❌  Please choose a category to log an expense.')
@@ -377,6 +377,8 @@ def ask_update():
     Asks user whether to update google sheets with their values or provide some advice for future spending.
     """
     while True:
+        print('''⚠️  \nYou will now be asked whether you wish to update your expenses to Google Sheets. 
+            Please be aware that you will have to manually remove your expenses from your Month sheet if you reconsider after pressing "u".''')
         update_msg = '\n➤ Type "u" to update Google sheets with your expenses, or "a" for financial advice...'
         user_update = input(update_msg)
         if user_update == 'u':
@@ -419,6 +421,45 @@ def update_worksheet():
     values_to_append = list(expenses.values())
     sheet.append_row(values_to_append)
 
+def expensive_battleships():
+    """
+    Adds two parameters to create a cell format as in Excel/ Google Sheets, e.g. 'C3'.
+    """
+    sheet = SHEET.worksheet('Overview')
+    global user_month
+    # The list user_expenses was changed to a dictionary in check_list().
+    global user_expenses
+
+    # The user inputs a number when selecting a month. This row holds all the values that need to be updated after the initial log. 
+    # + 1 is added to get the next cell (accounting for headers being in the first row).
+    battleship_two = int(user_month) + 1
+    used_keys = list(user_expenses.keys())
+    # Stores the column indexes of the logged expenses.
+    column_indexes = []
+
+    for key in used_keys:
+        cell = sheet.find(key)
+        # Index of column in spreadsheet.
+        cell_column = cell.col
+        lettered_column = num_lett(cell_column)
+        column_indexes.append(lettered_column)
+
+    cells = []
+    for letter in column_indexes:
+        battleship_one = letter
+        cell = battleship_one + str(battleship_two)
+        cells.append(cell)
+    print(cells)
+
+def num_lett(num):
+    """
+    Converts ASCII code to character using Python's built-in chr function.
+    """
+    if 1 <= num <= 7:
+        # chr(65) = A
+        return chr(num + 64)
+
 def main():
     print_intro()
+    expensive_battleships()
 main()

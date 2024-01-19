@@ -132,4 +132,6 @@ This would trigger my number validation function, which checked and returned if 
 # Future Development
 # Credits
 - [Currencies](https://pypi.org/project/currencies/) (Research and two lines of logic).
+- [How to Use gspread](https://docs.gspread.org/en/latest/user-guide.html)
+- [Convert Num to Letter (stack overflow)](https://stackoverflow.com/questions/18544419/how-to-convert-numbers-to-alphabet)
 # Acknowledgements
