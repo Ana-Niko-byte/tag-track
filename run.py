@@ -238,8 +238,17 @@ def ask_budget():
             print(f'✅  Budget: {formatted_budget}')
             # Update the global variable with the format.
             user_budget = formatted_budget
+            append_budget(user_budget)
             ask_category()
             return user_budget
+        
+        
+def append_budget(budget):
+    """
+    Updates B1 of the respective google sheets with the value of the user's budget.
+    """
+    sheet = user_gsheet
+    sheet.update_acell('B1', budget)
 
 def ask_category():
     """
@@ -397,7 +406,7 @@ def format_data():
     expenses = user_expenses
     for key, value in expenses.items():
         if key in format:
-            format[key] = value
+            format[key] = format_expenses(user_currency, value)
     return format
 
 def update_worksheet():
