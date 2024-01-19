@@ -61,7 +61,6 @@ user_budget = None
 user_budget_remainder = None
 user_currency = None
 user_expenses = []
-non_duplicated_user_expenses = {}
 
 def print_intro():
     """
@@ -70,6 +69,7 @@ def print_intro():
     text = text2art('Tag - Tracker')
     print(Fore.LIGHTGREEN_EX + 'Welcome to')
     print(Fore.LIGHTGREEN_EX + text + Fore.RESET)
+    ask_name()
 
 # _________ Beginning of shared functionalities, called throughout the application.
     
@@ -79,16 +79,16 @@ def quick_escape():
     """
     print('\n⚠️  Checkpoint!⚠️')
     while True:
-        escape_msg = '➤ Please press "Enter" to continue or type "q" to quit...'
+        escape_msg = '➤  Please press "Enter" to continue or type "q" to quit...'
         user_escape = input(escape_msg)
         if user_escape == 'q':
-            print(f'👋 You pressed "q". Exiting...')
+            print(f'👋  You pressed "q". Exiting...')
             break
         # 'Enter' gives an empty string so we check for this instead.
         elif user_escape == '':
             break
         else:
-            print(f'❌ Invalid input. You entered {user_escape}. Please try again.')
+            print(f'❌  Invalid input. You entered {user_escape}. Please try again.')
     return user_escape
 
 def validate_string(string):
@@ -97,9 +97,9 @@ def validate_string(string):
     Returns true if no digits or symbols are present. 
     """
     if not string:
-        print('❌ Please enter a value to begin.\n')
+        print('❌  Please enter a value to begin.\n')
     elif not all(letter.isalpha() for letter in string.split()):
-        print('❌ Why you using digits, bro?\n')
+        print('❌  Why you using digits, bro?\n')
     else:
         return True
 
@@ -109,17 +109,17 @@ def validate_num_selection(num):
     Returns true if no digits or symbols are present. 
     """
     if not num:
-        print('❌ Please enter a value to begin.\n')
+        print('❌  Please enter a value to begin.\n')
         return False
         # Allow decimal point values.
     try:
         if not all(float(digit) for digit in num.split()):
-            print('❌ Why you not using digits only, bro?\n')
+            print('❌  Why you not using digits only, bro?\n')
             return False
         else:
             return float(num)
     except ValueError:
-        print(f'❌ Invalid input. \n👉 Please use digits only.')
+        print(f'❌  Invalid input. \n👉  Please use digits only.')
         return False
 
 def validate_selection(selection, num_range, min_num_range = 0):
@@ -130,7 +130,7 @@ def validate_selection(selection, num_range, min_num_range = 0):
         if float(selection) > min_num_range and float(selection) <= num_range:
             return True
         else:
-            print(f'❌ Invalid input. Please choose one of the {num_range} options provided.')
+            print(f'❌  Invalid input. Please choose one of the {num_range} options provided.')
             return False
     else:
         return False
@@ -158,7 +158,7 @@ def ask_name():
         name = input('➤ Please tell me your name: ').strip()
         if validate_string(name):
             capitalised = name.capitalize()
-            print(f'\n✅ Hey, {capitalised}!')
+            print(f'\n✅  Hey, {capitalised}!')
             ask_month()
             break
     return name
@@ -171,12 +171,12 @@ def ask_month():
     create_table(MONTHS, 'Month')
     while True:
         global user_month
-        print('\n(💡 Type the \'No.\' that corresponds to the Month you want ;))')
-        month = input('➤ Please choose the month you want to log for: ')
+        print('\n(💡  Type the \'No.\' that corresponds to the Month you want ;))')
+        month = input('➤  Please choose the month you want to log for: ')
         user_month = month
         if validate_selection(month, 12):
             month_name = MONTHS[int(month)]
-            print(f'\n✅ You have chosen {month_name}.')
+            print(f'\n✅  You have chosen {month_name}.')
             get_month_sheet(month_name)
             ask_curr()
             break
@@ -189,7 +189,7 @@ def get_month_sheet(month_needed):
     print(f'Fetching the {month_needed} worksheet...\n')
     global user_gsheet 
     user_gsheet = SHEET.worksheet(month_needed)
-    print(f'✅ Got it!\n⌛ Hold on while we fetch the next table...\n')
+    print(f'✅  Got it!\n⌛  Hold on while we fetch the next table...\n')
     return user_gsheet
 
 def ask_curr():
@@ -200,11 +200,11 @@ def ask_curr():
     create_table(CURRENCY, 'Currency')
     while True:
         print('\n(💡 Type the \'No.\' that corresponds to the Currency you want ;))')
-        curr = input('➤ Please choose the currency you wish to log in: ')
+        curr = input('➤  Please choose the currency you wish to log in: ')
         if validate_selection(curr, 5):
             global user_currency
             user_currency = curr
-            print(f'✅ You have chosen to log in {CURRENCY[int(curr)]}')
+            print(f'✅  You have chosen to log in {CURRENCY[int(curr)]}')
             escape = quick_escape()
             if escape == '':
                 ask_budget()
@@ -226,16 +226,16 @@ def ask_budget():
     If valid input, asks user if they wish to continue. 
     """
     while True:
-        budget = input(f'\n➤ Please enter your budget for {MONTHS[int(user_month)]}: ')
+        budget = input(f'\n➤  Please enter your budget for {MONTHS[int(user_month)]}: ')
         if budget == '':
-            print('❌ Please enter your budget to continue.')
+            print('❌  Please enter your budget to continue.')
             continue
         elif validate_num_selection(budget):
             global user_currency
             global user_budget
             # Format the budget output to the user in their chosen currency.
             formatted_budget = format_expenses(user_currency, budget)
-            print(f'✅ Budget: {formatted_budget}')
+            print(f'✅  Budget: {formatted_budget}')
             # Update the global variable with the format.
             user_budget = formatted_budget
             ask_category()
@@ -248,21 +248,18 @@ def ask_category():
     """
     create_table(EXPENSES, 'Expense Category')
     while True:
-        print('\n(💡 Type the \'No.\' that corresponds to the Category you want ;))')
-        cat = input('➤ Please choose a category: ')
+        print('\n(💡  Type the \'No.\' that corresponds to the Category you want ;))')
+        cat = input('➤  Please choose a category: ')
         if cat == '':
-            print('❌ Please choose a category to log an expense.')
+            print('❌  Please choose a category to log an expense.')
             continue
         elif validate_selection(cat, 6):
             if int(cat) == 1 or int(cat) == 2:
-                print(f'✅ Ouch...spending on {EXPENSES[int(cat)]}...')
+                print(f'✅  Ouch...spending on {EXPENSES[int(cat)]}...')
             elif int(cat) > 2 and int(cat) != 6:
-                print(f'✅ Ooo...spending on {EXPENSES[int(cat)]}? Nice!')
-            escape = quick_escape()
-            if escape == '':
-                ask_expense(EXPENSES[int(cat)])
-            break
-    return cat
+                print(f'✅  Ooo...spending on {EXPENSES[int(cat)]}? Nice!')
+            ask_expense(EXPENSES[int(cat)])
+        return cat
     
 def ask_expense(category):
     """
@@ -276,10 +273,10 @@ def ask_expense(category):
         global user_month
         global user_budget
         if user_expense == '':
-            print(f'❌ Please enter your expenses for {category}')
+            print(f'❌  Please enter your expenses for {category}')
             continue
         elif validate_num_selection(user_expense):
-            print('✅ Thanks!\n⌛ Updating your expense log...')
+            print('✅  Thanks!\n⌛  Updating your expense log...')
             # Push the expense into the global user_expenses list.
             user_expenses.append([category, user_expense])
             if continue_expenses():
@@ -294,15 +291,15 @@ def continue_expenses():
     Loop to ask the user if they want to log another expense, with validation. 
     """
     while True:
-        expense_message = '\n➤ Please press "a" to add another expense, or "c" to continue.'
+        expense_message = '\n➤  Please press "a" to add another expense, or "c" to continue.'
         user_answer = input(expense_message)
         if user_answer == 'a':
             return True
         elif user_answer == 'c':
-            print('✅ Thanks!\n⌛ Printing your expense log...')
+            print('\n⌛  Printing your expense log...')
             return False
         else:
-            print(f'❌ Invalid input. You entered {user_answer}. Please try again.')
+            print(f'❌  Invalid input: {user_answer}. Please try again.')
 
 def check_list():
     """
@@ -322,8 +319,7 @@ def check_list():
             # Adds the key and value to the dictionary.
             duplicates[cat] = round(float(value), 2)
     # Re-assign the global variable the value of duplicates (used to update the Google Sheet logs).
-    global non_duplicated_user_expenses
-    non_duplicated_user_expenses = duplicates
+    user_expenses = duplicates
     return duplicates
 
 def create_expense(month, budget, colour = 'light_green'):
@@ -349,11 +345,7 @@ def create_expense(month, budget, colour = 'light_green'):
     table.add_row(['-----------------------', '-----------------------'])
     table.add_row([colored('Remaining budget', 'red'), colored(user_budget_remainder, 'red')])
     print(f'\n{table}')
-    update = ask_update()
-    if update == 'a':
-        format_data()
-    else:
-        print('doing something else?')
+    ask_update()
 
 def calculate_budget_remainder():
     # Get the unformatted version of budget.
@@ -365,7 +357,7 @@ def calculate_budget_remainder():
 
     unformatted_budget = ''.join(unformatted_budget)
     # Get the total of the user's expenses.
-    total = sum(non_duplicated_user_expenses.values())
+    total = sum(user_expenses.values())
     total = str(total)
     remainder = round(float(unformatted_budget) - float(total), 2)
     # Update the global variable for the remainder.
@@ -380,14 +372,14 @@ def ask_update():
         update_msg = '\n➤ Type "u" to update Google sheets with your expenses, or "a" for financial advice...'
         user_update = input(update_msg)
         if user_update == 'u':
-            print('⌛ Updating your worksheet...')
+            print('⌛  Updating your worksheet...')
             update_worksheet()
             break
         elif user_update == 'a':
             print('here is some advice...')
             break
         else:
-            print(f'❌ Invalid input. You entered {user_update}. Please try again.')
+            print(f'❌  Invalid input. You entered {user_update}. Please try again.')
             continue
 
 def format_data():
@@ -402,11 +394,10 @@ def format_data():
     'Online Shopping': '', 
     'Other': ''
     }
-    expenses = non_duplicated_user_expenses
+    expenses = user_expenses
     for key, value in expenses.items():
         if key in format:
             format[key] = value
-    print(format)
     return format
 
 def update_worksheet():
@@ -420,5 +411,4 @@ def update_worksheet():
 
 def main():
     print_intro()
-    ask_name()
 main()
