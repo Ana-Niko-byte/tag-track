@@ -238,7 +238,6 @@ def ask_budget():
             print(f'✅  Budget: {formatted_budget}')
             # Update the global variable with the format.
             user_budget = formatted_budget
-            append_budget(user_budget)
             ask_category()
             return user_budget
         
@@ -382,6 +381,8 @@ def ask_update():
         user_update = input(update_msg)
         if user_update == 'u':
             print('⌛  Updating your worksheet...')
+            # Only updates the worksheet once the user is sure all values are correct - otherwise 'q' to quit.
+            append_budget(user_budget)
             update_worksheet()
             break
         elif user_update == 'a':
