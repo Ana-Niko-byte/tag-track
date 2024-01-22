@@ -378,10 +378,15 @@ def create_expense(month, budget, colour = 'light_green'):
         table.add_row([colored(list_category, 'white'), colored(formatted_expense, 'white')])
         table.align = 'l'
     
-    calculate_budget_remainder()
+    remainder = calculate_budget_remainder()
+    remainder_value = float(remainder[1:])
     # Add separating rows to the table to differentiate final data.
     table.add_row(['-----------------------', '-----------------------'])
-    table.add_row([colored('Remaining budget', 'red'), colored(user_budget_remainder, 'red')])
+    # Check if budget is negative or positive to determine colour of final table row.
+    if remainder_value < 0:
+        table.add_row([colored('Your remaining budget:', 'red'), colored(user_budget_remainder, 'red')])
+    else:
+        table.add_row([colored('Your remaining budget:', 'green'), colored(user_budget_remainder, 'green')])
     print(f'\n{table}')
     ask_update()
 
@@ -396,6 +401,7 @@ def calculate_budget_remainder():
     # Update the global variable for the remainder.
     global user_budget_remainder
     user_budget_remainder = format_expenses(user_currency, remainder)
+    return user_budget_remainder
 
 def ask_update():
     """
