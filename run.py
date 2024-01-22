@@ -1,4 +1,5 @@
 import gspread
+import os
 from google.oauth2.service_account import Credentials
 from art import *
 from colorama import Fore
@@ -67,9 +68,7 @@ def print_intro():
     Prints large heading. 
     """
     text = text2art('Tag - Tracker')
-    print(Fore.LIGHTGREEN_EX + 'Welcome to')
     print(Fore.LIGHTGREEN_EX + text + Fore.RESET)
-    ask_name()
 
 # _________ Beginning of shared functionalities, called throughout the application.
     
@@ -82,6 +81,7 @@ def quick_escape():
         escape_msg = '➤  Please press "Enter" to continue or type "q" to quit...'
         user_escape = input(escape_msg)
         if user_escape == 'q':
+            print_intro()
             exit_tag()
             break
         # 'Enter' gives an empty string so we check for this instead.
@@ -93,6 +93,12 @@ def quick_escape():
 
 def exit_tag():
     print(f'\n👋  Thanks for using Tag-Track! Exiting...')
+
+def clear_terminal():
+    """
+    Clears the terminal screen.
+    """
+    os.system('cls')
 
 def validate_string(string):
     """
@@ -161,6 +167,7 @@ def ask_name():
         name = input('➤ Please tell me your name: ').strip()
         if validate_string(name):
             capitalised = name.capitalize()
+            clear_terminal()
             print(f'\n✅  Hey, {capitalised}!')
             ask_month()
             break
@@ -178,6 +185,7 @@ def ask_month():
         month = input('➤  Please choose the month you want to log for: ')
         user_month = month
         if validate_selection(month, 12):
+            clear_terminal()
             month_name = MONTHS[int(month)]
             print(f'\n✅  You have chosen {month_name}.')
             get_month_sheet(month_name)
@@ -207,6 +215,7 @@ def ask_curr():
         if validate_selection(curr, 5):
             global user_currency
             user_currency = curr
+            clear_terminal()
             print(f'✅  You have chosen to log in {CURRENCY[int(curr)]}')
             escape = quick_escape()
             if escape == '':
@@ -238,7 +247,8 @@ def ask_budget():
             global user_budget
             # Format the budget output to the user in their chosen currency.
             formatted_budget = format_expenses(user_currency, budget)
-            print(f'✅  Budget: {formatted_budget}')
+            clear_terminal()
+            print(f'✅  Budget for the month of {MONTHS[int(user_month)]}: {formatted_budget}')
             # Update the global variable with the format.
             user_budget = formatted_budget
             ask_category()
@@ -291,8 +301,10 @@ def ask_expense(category):
             # Push the expense into the global user_expenses list.
             user_expenses.append([category, user_expense])
             if continue_expenses():
+                clear_terminal()
                 return ask_category()
             else:
+                clear_terminal()
                 create_expense(user_month, user_budget)
                 break
     return user_expense
@@ -302,8 +314,7 @@ def continue_expenses():
     Loop to ask the user if they want to log another expense, with validation. 
     """
     while True:
-        expense_message = '\n➤  Please press "a" to add another expense, or "c" to continue.'
-        user_answer = input(expense_message)
+        user_answer = input('\n➤  Please press "a" to add another expense, or "c" to continue.')
         if user_answer == 'a':
             return True
         elif user_answer == 'c':
@@ -375,6 +386,7 @@ def ask_update():
     Asks user whether to update google sheets with their values or provide some advice for future spending.
     """
     while True:
+        clear_terminal()
         print('\nWould you like to upload your expenses to Google Sheets?')
         print('⚠️  Note: You will need to manually remove your expenses from your Month sheet if you reconsider.⚠️')
         user_update = input('\n➤ Type \'u\' to update Google sheets with your expenses, or \'q\' to exit tag-track...')
@@ -382,6 +394,7 @@ def ask_update():
             update_worksheet()
             break
         elif user_update == 'q':
+            print_intro()
             exit_tag()
             break
         else:
@@ -467,4 +480,5 @@ def update_worksheet():
 
 def main():
     print_intro()
+    ask_name()
 main()
