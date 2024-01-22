@@ -78,13 +78,11 @@ def quick_escape():
     """
     print('\n⚠️  Checking in!⚠️\n If you\'ve made any errors - now is the time to exit and restart. Don\'t worry - nothing has been logged yet :) ')
     while True:
-        escape_msg = '➤  Please press "Enter" to continue or type "q" to quit...'
-        user_escape = input(escape_msg)
+        user_escape = input('➤  Please press "Enter" to continue or type "q" to quit...')
         if user_escape == 'q':
             print_intro()
             exit_tag()
             break
-        # 'Enter' gives an empty string so we check for this instead.
         elif user_escape == '':
             break
         else:
@@ -237,22 +235,40 @@ def ask_budget():
     Asks user for budget and updates global budget variable.
     If valid input, asks user if they wish to continue. 
     """
-    while True:
-        budget = input(f'\n➤  Please enter your budget for {MONTHS[int(user_month)]}: ')
-        if budget == '':
-            print('❌  Please enter your budget to continue.')
-            continue
-        elif validate_num_selection(budget):
-            global user_currency
-            global user_budget
-            # Format the budget output to the user in their chosen currency.
-            formatted_budget = format_expenses(user_currency, budget)
-            clear_terminal()
-            print(f'✅  Budget for the month of {MONTHS[int(user_month)]}: {formatted_budget}')
-            # Update the global variable with the format.
-            user_budget = formatted_budget
-            ask_category()
-            return user_budget
+    global user_budget
+    current_value = user_gsheet.acell('B1').value
+    use_existing_budget = retrieve_budget(current_value, user_budget)
+    if use_existing_budget == 'u':
+        print(f'Your budget remains at {current_value} for the month of {MONTHS[int(user_month)]}.')
+        user_budget = current_value
+        ask_category()
+    elif use_existing_budget == 'c':
+        while True:
+            budget = input(f'\n➤  Please enter your budget for {MONTHS[int(user_month)]}: ')
+            if budget == '':
+                print('❌  Please enter your budget to continue.')
+                continue
+            elif validate_num_selection(budget):
+                global user_currency
+                # Format the budget output to the user in their chosen currency.
+                formatted_budget = format_expenses(user_currency, budget)
+                clear_terminal()
+                print(f'✅  Budget for the month of {MONTHS[int(user_month)]}: {formatted_budget}')
+                # Update the global variable with the format.
+                user_budget = formatted_budget
+                ask_category()
+                return user_budget
+        
+def retrieve_budget(current, budget):
+    """
+    Retrieves current budget value and asks user if they wish to use it or change its value. 
+    """
+    if current:
+        print(f'\n⚠️  Your budget for the month of {MONTHS[int(user_month)]} is currently set to {current}.⚠️')
+        user_budget_input = input('\n➤  Would you like to use this or amend it?\n(Please type \'u\' to use existing, or \'c\' to change)')
+        return user_budget_input
+    else:
+        append_budget(budget)
         
 def append_budget(budget):
     """
@@ -386,7 +402,6 @@ def ask_update():
     Asks user whether to update google sheets with their values or provide some advice for future spending.
     """
     while True:
-        clear_terminal()
         print('\nWould you like to upload your expenses to Google Sheets?')
         print('⚠️  Note: You will need to manually remove your expenses from your Month sheet if you reconsider.⚠️')
         user_update = input('\n➤ Type \'u\' to update Google sheets with your expenses, or \'q\' to exit tag-track...')
