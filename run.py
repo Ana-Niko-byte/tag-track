@@ -82,7 +82,7 @@ def quick_escape():
         escape_msg = '➤  Please press "Enter" to continue or type "q" to quit...'
         user_escape = input(escape_msg)
         if user_escape == 'q':
-            print(f'\n👋  You pressed \'q\'. Exiting...')
+            exit_tag()
             break
         # 'Enter' gives an empty string so we check for this instead.
         elif user_escape == '':
@@ -90,6 +90,9 @@ def quick_escape():
         else:
             print(f'❌  Invalid input. You entered {user_escape}. Please try again.')
     return user_escape
+
+def exit_tag():
+    print(f'\n👋  Thanks for using Tag-Track! Exiting...')
 
 def validate_string(string):
     """
@@ -358,12 +361,7 @@ def create_expense(month, budget, colour = 'light_green'):
 def calculate_budget_remainder():
     # Get the unformatted version of budget.
     global user_budget
-    unformatted_budget = []
-    for symbol in user_budget:
-        if symbol.isdigit():
-            unformatted_budget.append(symbol)
-
-    unformatted_budget = ''.join(unformatted_budget)
+    unformatted_budget = user_budget[1:]
     # Get the total of the user's expenses.
     total = sum(user_expenses.values())
     total = str(total)
@@ -377,18 +375,14 @@ def ask_update():
     Asks user whether to update google sheets with their values or provide some advice for future spending.
     """
     while True:
-        print('''⚠️  \nYou will now be asked whether you wish to update your expenses to Google Sheets. 
-            Please be aware that you will have to manually remove your expenses from your Month sheet if you reconsider after pressing "u".''')
-        update_msg = '\n➤ Type "u" to update Google sheets with your expenses, or "a" for financial advice...'
-        user_update = input(update_msg)
+        print('\nWould you like to upload your expenses to Google Sheets?')
+        print('⚠️  Note: You will need to manually remove your expenses from your Month sheet if you reconsider.⚠️')
+        user_update = input('\n➤ Type \'u\' to update Google sheets with your expenses, or \'q\' to exit tag-track...')
         if user_update == 'u':
-            print('⌛  Updating your worksheet...')
-            # Only updates the worksheet once the user is sure all values are correct - otherwise 'q' to quit.
-            append_budget(user_budget)
             update_worksheet()
             break
-        elif user_update == 'a':
-            print('here is some advice...')
+        elif user_update == 'q':
+            exit_tag()
             break
         else:
             print(f'❌  Invalid input. You entered {user_update}. Please try again.')
@@ -398,28 +392,12 @@ def format_data():
     """
     Formats data for the google sheet. 
     """
-    format = {   
-    'Rent': '',
-    'Groceries': '', 
-    'Vehicle': '',
-    'Cafe/Restaurant': '',
-    'Online Shopping': '', 
-    'Other': ''
-    }
+    format = {'Rent': '','Groceries': '', 'Vehicle': '','Cafe/Restaurant': '','Online Shopping': '', 'Other': ''}
     expenses = user_expenses
     for key, value in expenses.items():
         if key in format:
             format[key] = format_expenses(user_currency, value)
     return format
-
-def update_worksheet():
-    """
-    Updates relevant Google Sheets with user's expenses. 
-    """
-    expenses = format_data()
-    sheet = user_gsheet
-    values_to_append = list(expenses.values())
-    sheet.append_row(values_to_append)
 
 def expensive_battleships():
     """
@@ -473,8 +451,20 @@ def update_cell_values():
             else:
                 addition = float(cell_value) + float(initial_log)
             OVERVIEW.update_acell(cell, addition)
+    print(f'\n✅  We\'ve successfully updated your annual Overview sheet!')
+    print('Tip: Make sure to check this sheet regularly to stay on top of your spending habits :)')
+
+def update_worksheet():
+    """
+    Updates relevant Google Sheets with user's expenses. 
+    """
+    print('⌛  Updating your worksheet...')
+    expenses = format_data()
+    values_to_append = list(expenses.values())
+    append_budget(user_budget)
+    user_gsheet.append_row(values_to_append)
+    update_cell_values()
 
 def main():
     print_intro()
-    update_cell_values()
 main()
