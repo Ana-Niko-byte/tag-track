@@ -449,7 +449,7 @@ def expensive_battleships():
         battleship_one = letter
         cell = battleship_one + str(battleship_two)
         cells.append(cell)
-    print(cells)
+    return cells
 
 def num_lett(num):
     """
@@ -459,7 +459,22 @@ def num_lett(num):
         # chr(65) = A
         return chr(num + 64)
 
+def update_cell_values():
+    cells_to_update = expensive_battleships()
+    user_logs = list(user_expenses.values())
+    OVERVIEW = SHEET.worksheet('Overview')
+    for i, cell in enumerate(cells_to_update):
+        if i < len(user_logs):
+            initial_log = user_logs[i]
+            cell_value = OVERVIEW.acell(cell).value
+            if cell_value == None:
+                cell_value = 0
+                addition = initial_log
+            else:
+                addition = float(cell_value) + float(initial_log)
+            OVERVIEW.update_acell(cell, addition)
+
 def main():
     print_intro()
-    expensive_battleships()
+    update_cell_values()
 main()
