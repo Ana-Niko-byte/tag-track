@@ -1,4 +1,5 @@
 import gspread
+import os
 from google.oauth2.service_account import Credentials
 from art import *
 from colorama import Fore
@@ -77,12 +78,11 @@ def quick_escape():
     """
     print('\n⚠️  Checking in!⚠️\n If you\'ve made any errors - now is the time to exit and restart. Don\'t worry - nothing has been logged yet :) ')
     while True:
-        escape_msg = '➤  Please press "Enter" to continue or type "q" to quit...'
-        user_escape = input(escape_msg)
+        user_escape = input('➤  Please press "Enter" to continue or type "q" to quit...')
         if user_escape == 'q':
+            print_intro()
             exit_tag()
             break
-        # 'Enter' gives an empty string so we check for this instead.
         elif user_escape == '':
             break
         else:
@@ -92,6 +92,12 @@ def quick_escape():
 def exit_tag():
     print_intro()
     print(f'\n👋  Thanks for using Tag-Track! Exiting...')
+
+def clear_terminal():
+    """
+    Clears the terminal screen.
+    """
+    os.system('cls')
 
 def validate_string(string):
     """
@@ -160,6 +166,7 @@ def ask_name():
         name = input('➤ Please tell me your name: ').strip()
         if validate_string(name):
             capitalised = name.capitalize()
+            clear_terminal()
             print(f'\n✅  Hey, {capitalised}!')
             ask_month()
             break
@@ -177,6 +184,7 @@ def ask_month():
         month = input('➤  Please choose the month you want to log for: ')
         user_month = month
         if validate_selection(month, 12):
+            clear_terminal()
             month_name = MONTHS[int(month)]
             print(f'\n✅  You have chosen {month_name}.')
             get_month_sheet(month_name)
@@ -206,6 +214,7 @@ def ask_curr():
         if validate_selection(curr, 5):
             global user_currency
             user_currency = curr
+            clear_terminal()
             print(f'✅  You have chosen to log in {CURRENCY[int(curr)]}')
             escape = quick_escape()
             if escape == '':
@@ -313,8 +322,10 @@ def ask_expense(category):
             # Push the expense into the global user_expenses list.
             user_expenses.append([category, user_expense])
             if continue_expenses():
+                clear_terminal()
                 return ask_category()
             else:
+                clear_terminal()
                 create_expense(user_month, user_budget)
                 break
     return user_expense
@@ -324,8 +335,7 @@ def continue_expenses():
     Loop to ask the user if they want to log another expense, with validation. 
     """
     while True:
-        expense_message = '\n➤  Please press "a" to add another expense, or "c" to continue.'
-        user_answer = input(expense_message)
+        user_answer = input('\n➤  Please press "a" to add another expense, or "c" to continue.')
         if user_answer == 'a':
             return True
         elif user_answer == 'c':
@@ -373,10 +383,15 @@ def create_expense(month, budget, colour = 'light_green'):
         table.add_row([colored(list_category, 'white'), colored(formatted_expense, 'white')])
         table.align = 'l'
     
-    calculate_budget_remainder()
+    remainder = calculate_budget_remainder()
+    remainder_value = float(remainder[1:])
     # Add separating rows to the table to differentiate final data.
     table.add_row(['-----------------------', '-----------------------'])
-    table.add_row([colored('Remaining budget', 'red'), colored(user_budget_remainder, 'red')])
+    # Check if budget is negative or positive to determine colour of final table row.
+    if remainder_value < 0:
+        table.add_row([colored('Your remaining budget:', 'red'), colored(user_budget_remainder, 'red')])
+    else:
+        table.add_row([colored('Your remaining budget:', 'green'), colored(user_budget_remainder, 'green')])
     print(f'\n{table}')
     ask_update()
 
@@ -392,6 +407,7 @@ def calculate_budget_remainder():
     # Update the global variable for the remainder.
     global user_budget_remainder
     user_budget_remainder = format_expenses(user_currency, remainder)
+    return user_budget_remainder
 
 def ask_update():
     """
@@ -405,6 +421,7 @@ def ask_update():
             update_worksheet()
             break
         elif user_update == 'q':
+            print_intro()
             exit_tag()
             break
         else:
