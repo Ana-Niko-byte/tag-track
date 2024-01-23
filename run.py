@@ -64,12 +64,10 @@ user_expenses = []
 
 def print_intro():
     """
-    Prints large heading. 
+    Prints large heading using colorama styling library. 
     """
     text = text2art('Tag - Tracker')
-    print(Fore.LIGHTGREEN_EX + 'Welcome to')
     print(Fore.LIGHTGREEN_EX + text + Fore.RESET)
-    ask_name()
 
 # _________ Beginning of shared functionalities, called throughout the application.
     
@@ -92,6 +90,7 @@ def quick_escape():
     return user_escape
 
 def exit_tag():
+    print_intro()
     print(f'\n👋  Thanks for using Tag-Track! Exiting...')
 
 def validate_string(string):
@@ -210,7 +209,8 @@ def ask_curr():
             print(f'✅  You have chosen to log in {CURRENCY[int(curr)]}')
             escape = quick_escape()
             if escape == '':
-                ask_budget()
+                current = user_gsheet.acell('B1').value
+                validate_budget_retrieval(current)
             break
     return curr
 
@@ -223,27 +223,6 @@ def format_expenses(curr, expense):
     formatted_expense = currency.get_money_format(expense)
     return formatted_expense
 
-def ask_budget():
-    """
-    Asks user for budget and updates global budget variable.
-    If valid input, asks user if they wish to continue. 
-    """
-    while True:
-        budget = input(f'\n➤  Please enter your budget for {MONTHS[int(user_month)]}: ')
-        if budget == '':
-            print('❌  Please enter your budget to continue.')
-            continue
-        elif validate_num_selection(budget):
-            global user_currency
-            global user_budget
-            # Format the budget output to the user in their chosen currency.
-            formatted_budget = format_expenses(user_currency, budget)
-            print(f'✅  Budget: {formatted_budget}')
-            # Update the global variable with the format.
-            user_budget = formatted_budget
-            ask_category()
-            return user_budget
-        
 def append_budget(budget):
     """
     Updates B1 of the respective google sheets with the value of the user's budget.
@@ -251,6 +230,49 @@ def append_budget(budget):
     sheet = user_gsheet
     # This will change any previously logged budget in the 'B1' cell. 
     sheet.update_acell('B1', budget)
+
+def retrieve_budget():
+    """
+    Retrieves current budget value and asks user if they wish to use it or change its value. 
+    """
+    current = user_gsheet.acell('B1').value
+    if current == None:
+        ask_budget()
+    elif current:
+        print(f'\n⚠️  Your budget for the month of {MONTHS[int(user_month)]} is currently set to {current}.⚠️')
+        user_budget_input = input('\n➤  Would you like to use this or amend it?\n(Please type \'u\' to use existing, or \'c\' to change)')
+        return user_budget_input
+    
+def validate_budget_retrieval(current_budget):
+    retrieved_choice = retrieve_budget()
+    if retrieved_choice == 'u':
+        global user_budget
+        user_budget = current_budget
+        print(f'Your budget remains at {current_budget} for the month of {MONTHS[int(user_month)]}.')
+        ask_category()
+    elif retrieved_choice == 'c':
+        ask_budget()  
+
+def ask_budget():
+    """
+    Asks user for budget and updates global budget variable.
+    If valid input, asks user if they wish to continue. 
+    """
+    while True:
+        global user_budget
+        budget = input(f'\n➤  Please enter your budget for {MONTHS[int(user_month)]}: ')
+        if budget == '':
+            print('❌  Please enter your budget to continue.')
+            continue
+        elif validate_num_selection(budget):
+            global user_currency
+            # Format the budget output to the user in their chosen currency.
+            formatted_budget = format_expenses(user_currency, budget)
+            print(f'✅  Budget for the month of {MONTHS[int(user_month)]}: {formatted_budget}')
+            # Update the global variable with the format.
+            user_budget = formatted_budget
+            ask_category()
+            return user_budget
 
 def ask_category():
     """
@@ -365,7 +387,8 @@ def calculate_budget_remainder():
     # Get the total of the user's expenses.
     total = sum(user_expenses.values())
     total = str(total)
-    remainder = round(float(unformatted_budget) - float(total), 2)
+    numeric_budget = float(unformatted_budget.replace(',', ''))
+    remainder = round(numeric_budget - float(total), 2)
     # Update the global variable for the remainder.
     global user_budget_remainder
     user_budget_remainder = format_expenses(user_currency, remainder)
@@ -467,4 +490,5 @@ def update_worksheet():
 
 def main():
     print_intro()
+    ask_name()
 main()
