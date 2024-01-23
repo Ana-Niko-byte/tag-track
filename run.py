@@ -65,9 +65,9 @@ user_expenses = []
 
 def print_intro():
     """
-    Prints large heading using colorama styling library + text2art 'ghost' font. 
+    Prints large heading using colorama styling library. 
     """
-    text = text2art('Tag - Tracker', font = 'ghost')
+    text = text2art('Tag - Tracker')
     print(Fore.LIGHTGREEN_EX + text + Fore.RESET)
 
 # _________ Beginning of shared functionalities, called throughout the application.
