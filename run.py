@@ -96,7 +96,12 @@ def clear_terminal():
     """
     Clears the terminal screen for improved UX.
     """
-    os.system('cls')
+    # For windows os.
+    if os.name == 'nt':
+        os.system('cls')
+    # For Unix/Linux os.
+    else:
+        os.system('clear')
 
 def validate_string(string):
     """
