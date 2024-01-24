@@ -113,11 +113,11 @@ Below is the flowchart for the application. Noted is the general flow of the app
 ### Colour
 Color plays a key role in the tag-tracker interface, with specific hues chosen for their significance and legibility. The title of the tag-tracker and the headers of all tables feature green, a color universally linked with finance and money. Green is also chosen for its high legibility in the colorama Python library, making it a suitable choice.
 
-[tag tracker heading]()
+![tag tracker heading]()
 
 For instances where a user exceeds their monthly budget, red is utilized in the final summary table to highlight the negative overdraft. In contrast, when the budget is not exceeded, the remaining balance is displayed in a darker shade of green, maintaining the financial theme.
 
-[conclusive table]()
+![conclusive table]()
 
 The main reason for using colour in the application is to provide a somewhat engaging interface for the user, and to distinguish key pieces of text from the terminal face. 
 
@@ -137,11 +137,11 @@ Emojis/icons are used throughout the application to visually aid users in distin
 ### Month/Currency/Categories Choice
 Users can choose a month for tracking their expenses from a numerical list. This selection process retrieves the corresponding monthly sheet from Google Sheets, along with any existing data relevant to that month. Later in the application, both the user's expenses and budget information are recorded onto the appropriate Google Sheet for that month, and calculations for total expenses are made for the corresponding month row in the overview sheet. 
 
-[month feature](docs/images/month-selection.png)
+![month feature](docs/images/month-selection.png)
 
 Users are given the option to select from 5 different currencies to record their expenses. This feature integrates with the currencies Python library, enabling the display of corresponding currency symbols next to the users' expense and budget entries.
 
-[currency feature](docs/images/currency-selection.png)
+![currency feature](docs/images/currency-selection.png)
 
 Users are given the option to select from 6 different categories to record their expenses. These categories represent columns in the month sheets, to which users can log their expenses. These same columns are replicated in the overview sheet, providing users with a detailed annual summary of their expenses across all categories.
 
@@ -149,7 +149,7 @@ Furthermore, for a bit of fun, the user's input validation is tweaked so that a 
 
 The user may log several times for one category. If there is more than one expense log per category, the expenses are added together and the total is displayed in the conclusive user expense table and later logged to Google Sheets (if the user chooses to). 
 
-[category feature](docs/images/category-selection.png)
+![category feature](docs/images/category-selection.png)
 
 ### Budget Input
 As mentioned, the user's month selection retrieves the corresponding Google Sheet with all relevant data already on it. This data includes a check for an existing budget previously logged by the user:
@@ -158,27 +158,29 @@ As mentioned, the user's month selection retrieves the corresponding Google Shee
 If one exists, the user is prompted on whether they wish to continue with this budget, or update it to a new value. The input is then validated and the application proceeds according to the user's choice. 
 
 In the first image below, there is an existing budget of 6000 euro for the month of January.
-[existing budget in Google Sheets](docs/images/existing-budget.png)
+
+![existing budget in Google Sheets](docs/images/existing-budget.png)
 
 In the second image below, the user has selected to log for the month of January, the application detects an existing budget, displays it to the user, and asks the user whether they wish to continue with it or change its value.
-[budget retrieval feature](docs/images/budget-retrieval.png)
+
+![budget retrieval feature](docs/images/budget-retrieval.png)
 
 #### No Budget
 If there is no existing budget, the user is prompted to enter a budget for their chosen month. The input is validated and the user is either directed to the next step, or given a validation error with a tip on the type of input expected, and asked to re-enter their budget. 
 
-[budget entry feature](docs/images/budget-entry.png)
+![budget entry feature](docs/images/budget-entry.png)
 
 ### Conclusive User Table
 The conclusive user table displays a summary of the user's logged expenses. The top row shows the Month and Budget. The next rows show the total spendings for each category, and the final row displays the budget remainder after all spendings were deducted. If the budget remainder is positive, the result is displayed in green. If the remainder has an overdraft, the result is displayed in red. 
 
-[conclusive user table feature (green)](docs/images/conclusive-table-green.png)
-[conclusive user table feature (red)](docs/images/conclusive-table-red.png)
+![conclusive user table feature (green)](docs/images/conclusive-table-green.png)
+![conclusive user table feature (red)](docs/images/conclusive-table-red.png)
 
 ### Google Sheets Logging + Overview Calculations
 Under the conclusive user expense table, the user is asked whether they want to log their expenses to Google Sheets. If not, the application displays a goodbye message and does not log anything. If yes, the expenses are logged to Google Sheets and the overview sheet is automatically updated with new totals. 
 
-[google sheets feature](docs/images/track-one.png)
-[overview feature](docs/images/tag-track-overview.png)
+![google sheets feature](docs/images/track-one.png)
+![overview feature](docs/images/tag-track-overview.png)
 
 # Technologies
 - [gspread](https://pypi.org/project/gspread/) - for interacting with Google Sheets.
@@ -197,28 +199,31 @@ Under the conclusive user expense table, the user is asked whether they want to 
 There were a few issues while the project was being developed, having mostly to do with string, integer and float use cases. In the image below, you can see the user's conclusive table, in which the month, budget, and expenses are detailed. 
 
 ### Integer Number Bug
-[Integer bug](docs/images/debugging.png)
+
+![Integer bug](docs/images/debugging.png)
 
 As in the current application, each category is detailed in a separate row. If the category was logged more than once by the user, the value of the expenses are added and appended to the existing category row. Before appending, the values are logged to a dictionary, detailing each of the individually logged expense values - and in one instance, as detailed in the _'Vehicle':'4324342'_ element. The issue is quite clear here - the expenses are pushed as strings and thus my attempt to add the values '432' and '432' resulted in '432432', instead of 864. This problem was fixed by converting the values into integers and then adding them (second image below, but with different values). 
 
-[Integer bug solution](docs/images/debugging-answer.png)
+![Integer bug solution](docs/images/debugging-answer.png)
 
 Another more significant issue arose when trying to log values that had a decimal point as expenses, i.e. 69.99 for Online Shopping. Please see image below. 
 
 ### Float Number Bug
-[Float bug](docs/images/digits-error.png)
+
+![Float bug](docs/images/digits-error.png)
 
 This would trigger my number validation function, which checked and returned if a given input isdigit(). This function was modified to instead check if a given input was a float, as this accepts both integer values (e.g., 20.0), and floats. Please see image below.
 
-[Float bug fix](docs/images/float-debugging-answer.png)
+![Float bug fix](docs/images/float-debugging-answer.png)
 
 ### Terminal Clear Bug
-[terminal clear bug](docs/images/terminal.png)
+
+![terminal clear bug](docs/images/terminal.png)
 
 This error was encountered after implementing a function that would clear the terminal screen. While it worked as intended in the VSCode terminal, it threw the error shown above in the Heroku terminal. After some research [here](https://stackoverflow.com/questions/13384116/linux-console-cls-not-found-error), the reason for the bug was pinpointed being due to Heroku's Unix/Linux-like nature, whereas my function was designed only to handle terminal clearing on a Windows operating system. The first iteration of the function is shown below, with the improved version after it. 
 
-[terminal clear function windows](docs/images/clear-function-windows.png)
-[terminal clear solution](docs/images/terminal-clear-all.png)
+![terminal clear function windows](docs/images/clear-function-windows.png)
+![terminal clear solution](docs/images/terminal-clear-all.png)
 
 ### Debugging
 # Accessibility & Performance
