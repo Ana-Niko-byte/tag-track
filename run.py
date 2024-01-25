@@ -151,7 +151,7 @@ def confirm_input(user_input):
     """
     Confirms the user's input. If correct, proceeds to next step. If not, loops back to function. 
     """
-    user_confirmation = input(f' 👉  You have chosen {user_input}.\nPlease type \'p\' to proceed, or type \'c\' to change: ')
+    user_confirmation = input(f'\n 👉  You\'ve chosen {user_input}.\n Type \'p\' to proceed with your selection, or \'c\' to change: ')
     if not user_confirmation:
         print(' ❌  Please enter a value to continue.\n')
     elif user_confirmation == 'p' or user_confirmation == 'c':
@@ -216,10 +216,15 @@ def get_month_sheet(month_needed):
     Fetches the worksheet based on the month the user chose. 
     """
     print(f'Fetching the \'{month_needed}\' worksheet...\n')
-    global user_gsheet 
-    user_gsheet = SHEET.worksheet(month_needed)
-    print(f' ✅  Got it!\n ⌛  Hold on while we fetch the next table...\n')
-    clear_terminal()
+    global user_gsheet
+    try:
+        user_gsheet = SHEET.worksheet(month_needed)
+        print(f' ✅  Worksheet retrieved successfully!\n ⌛  Hold on while we fetch the next table...\n')
+        clear_terminal()
+    # Code from (https://snyk.io/advisor/python/gspread/functions/gspread.exceptions.WorksheetNotFound)
+    except gspread.exceptions.WorksheetNotFound:
+        print(' ❌  We weren\'nt able to retrieve your worksheet.\n 👉  Please check your internet connection and try again')
+        exit_tag()
     return user_gsheet
 
 def ask_curr():
@@ -236,12 +241,17 @@ def ask_curr():
         if validate_selection(curr, 5):
             global user_currency
             user_currency = curr
-            clear_terminal()
-            print(f' ✅  You have chosen to log in \'{CURRENCY[int(curr)]}\'')
-            escape = quick_escape()
-            if escape == '':
-                current = user_gsheet.acell('B1').value
-                validate_budget_retrieval(current)
+            user_choice = confirm_input(CURRENCY[int(curr)])
+            if user_choice == 'p':
+                clear_terminal()
+                print(f' ✅  You have chosen to log in \'{CURRENCY[int(curr)]}\'')
+                escape = quick_escape()
+                if escape == '':
+                    current = user_gsheet.acell('B1').value
+                    validate_budget_retrieval(current)
+                break
+            elif user_choice == 'c':
+                ask_curr()
             break
     return curr
 
