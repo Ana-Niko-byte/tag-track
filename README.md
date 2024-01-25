@@ -226,11 +226,17 @@ This error was encountered after implementing a function that would clear the te
 ![terminal clear solution](docs/images/terminal-clear-all.png)
 
 ### Debugging
+
+
 # Accessibility & Performance
-### Lighthouse
-### Colour Accessibility Validator 
+
+
 # Deployment
+
+
 # Future Development
+
+
 # Credits
 - [Currencies](https://pypi.org/project/currencies/) (Research and two lines of logic).
 - [How to Use gspread](https://docs.gspread.org/en/latest/user-guide.html)
