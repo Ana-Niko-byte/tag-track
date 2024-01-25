@@ -151,14 +151,15 @@ def confirm_input(user_input):
     """
     Confirms the user's input. If correct, proceeds to next step. If not, loops back to function. 
     """
-    user_confirmation = input(f'\n 👉  You\'ve chosen {user_input}.\n Type \'p\' to proceed with your selection, or \'c\' to change: ')
-    if not user_confirmation:
-        print(' ❌  Please enter a value to continue.\n')
-    elif user_confirmation == 'p' or user_confirmation == 'c':
-        return user_confirmation
-    else:
-        print(f' ❌  Invalid input.\n 👉  Please choose either \'p\', or \'c\' to proceed.')
-        return False
+    while True:
+        user_confirmation = input(f'\n 👉  You\'ve chosen {user_input}.\n Type \'p\' to proceed with your selection, or \'c\' to change: ')
+        if not user_confirmation:
+            print(' ❌  Please enter a value to continue.\n')
+        elif user_confirmation == 'p' or user_confirmation == 'c':
+            break
+        else:
+            print(f' ❌  Invalid input.\n 👉  Please choose either \'p\', or \'c\' to proceed.')
+    return user_confirmation
 
 def create_table(value, heading, colour = 'light_green'):
     """
@@ -207,6 +208,7 @@ def ask_month():
                 get_month_sheet(month_name)
                 ask_curr()
             elif user_choice == 'c':
+                clear_terminal()
                 ask_month()
             break
     return month_name
@@ -311,11 +313,17 @@ def ask_budget():
             global user_currency
             # Format the budget output to the user in their chosen currency.
             formatted_budget = format_expenses(user_currency, budget)
-            print(f' ✅  Budget for the month of {MONTHS[int(user_month)]}: {formatted_budget}')
-            # Update the global variable with the format.
-            user_budget = formatted_budget
-            ask_category()
-            return user_budget
+            user_choice = confirm_input(formatted_budget)
+            if user_choice == 'p':
+                clear_terminal()
+                print(f' ✅  Budget for the month of {MONTHS[int(user_month)]}: {formatted_budget}')
+                # Update the global variable with the format.
+                user_budget = formatted_budget
+                ask_category()
+                return user_budget
+            elif user_choice == 'c':
+                current = user_gsheet.acell('B1').value
+                validate_budget_retrieval(current)
 
 def ask_category():
     """
@@ -332,11 +340,15 @@ def ask_category():
         elif validate_selection(cat, 6) == False:
             continue
         elif validate_selection(cat, 6):
-            if int(cat) == 1 or int(cat) == 2:
-                print(f'\n ✅  Ouch...spending on {EXPENSES[int(cat)]}...')
-            elif int(cat) > 2 and int(cat) != 6:
-                print(f'\n ✅  Ooo...spending on {EXPENSES[int(cat)]}? Nice!')
-            ask_expense(EXPENSES[int(cat)])
+            user_choice = confirm_input(EXPENSES[int(cat)])
+            if user_choice == 'p':
+                if int(cat) == 1 or int(cat) == 2:
+                    print(f'\n ✅  Ouch...spending on {EXPENSES[int(cat)]}...')
+                elif int(cat) > 2 and int(cat) != 6:
+                    print(f'\n ✅  Ooo...spending on {EXPENSES[int(cat)]}? Nice!')
+                ask_expense(EXPENSES[int(cat)])
+            elif user_choice == 'c':
+                ask_category()
         return cat
     
 def ask_expense(category):
@@ -354,21 +366,25 @@ def ask_expense(category):
             print(f' ❌  Please enter your expenses for {category}')
             continue
         elif validate_num_selection(user_expense):
-            print(' ✅  Thanks!\n ⌛  Updating your expense log...')
-            # Push the expense into the global user_expenses list.
-            user_expenses.append([category, user_expense])
-            if continue_expenses():
-                clear_terminal()
-                return ask_category()
-            else:
-                clear_terminal()
-                create_expense(user_month, user_budget)
-                break
+            user_choice = confirm_input(user_expense)
+            if user_choice == 'p':
+                print(' ✅  Thanks!\n ⌛  Updating your expense log...')
+                # Push the expense into the global user_expenses list.
+                user_expenses.append([category, user_expense])
+                if continue_expenses():
+                    clear_terminal()
+                    return ask_category()
+                else:
+                    clear_terminal()
+                    create_expense(user_month, user_budget)
+                    break
+            elif user_choice == 'c':
+                ask_expense(category)
     return user_expense
 
 def continue_expenses():
     """
-    Loop to ask the user if they want to log another expense, with validation. 
+    Loop asking the user if they want to log another expense, with validation. 
     """
     while True:
         user_answer = input('\n➤  Please type \'a\' to add another expense, or \'c\' to continue.')
