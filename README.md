@@ -197,7 +197,7 @@ Under the conclusive user expense table, the user is asked whether they want to 
 
 | Feature | Expected Outcome | Testing Procedure | Result | Remark |
 |----------|----------|----------|----------|----------|
-| Intro   | Print? Ask Name?   | Click 'Run Program' | Heading prints as expected, asks Name | ![thumbs-up](docs/images/thumbs-up.jpg) |
+| Intro   | Print? Ask Name?   | Click 'Run Program' | Heading prints as expected, asks Name | <img src="docs/images/thumbs-up.jpg" height="100">   |
 | Name Input  | Loop until Validated? Month input?   | Inputs: '', 'ana43', '35', 'ana'   | Loops until validated (''ana) with appropriate error messages, greeting with capitalised Name, asks Month | <img src="docs/images/thumbs-up.jpg" height="100"> |
 | Month Input   | Loop until Validated? Currency choice?   | Inputs: '', letters, numbers > 12, '1' | Loops until validated ('1') with appropriate error messages, asks Currency   | <img src="docs/images/thumbs-up.jpg" height="100"> |
 | Procedure Check in! | 'p' to proceed, 'c' to change - re-plays previous feature | Inputs: '', 'g', '4', 'p'   | Loops until validated ('p') with appropriate error messages, proceeds to next feature   | <img src="docs/images/thumbs-up.jpg" height="100"> |
