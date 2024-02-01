@@ -192,13 +192,15 @@ Under the conclusive user expense table, the user is asked whether they want to 
 - [termcolor](https://pypi.org/project/termcolor/) - used in title and heading colours. 
 - [currencies](https://pypi.org/project/currencies/) - for currency symbols and conversions. 
 - [amiresponsive](https://ui.dev/amiresponsive?url=https://tag-track-cc45575f1826.herokuapp.com/) - for the responsive png
+- [Code Beautify](https://codebeautify.org/python-formatter-beautifier) - for beautifying my Python Code.
+- [CI Python Linter](https://pep8ci.herokuapp.com/) - for detecting lint in my code.
 
 # Testing & Debugging
 
 | Feature | Expected Outcome | Testing Procedure | Result | Remark |
 |----------|----------|----------|----------|----------|
 | Intro   | Print? Ask Name?   | Click 'Run Program' | Heading prints as expected, asks Name | <img src="docs/images/thumbs-up.jpg">   |
-| Name Input  | Loop until Validated? Month input?   | Inputs: '', 'ana43', '35', 'ana'   | Loops until validated (''ana) with appropriate error messages, greeting with capitalised Name, asks Month | <img src="docs/images/thumbs-up.jpg"> |
+| Name Input  | Loop until Validated? Month input?   | Inputs: '', 'ana43', '35', 'ana'   | Loops until validated ('ana') with appropriate error messages, greeting with capitalised Name, asks Month | <img src="docs/images/thumbs-up.jpg"> |
 | Month Input   | Loop until Validated? Currency choice?   | Inputs: '', letters, numbers > 12, '1' | Loops until validated ('1') with appropriate error messages, asks Currency   | <img src="docs/images/thumbs-up.jpg"> |
 | Procedure Check in! | 'p' to proceed, 'c' to change - re-plays previous feature | Inputs: '', 'g', '4', 'p'   | Loops until validated ('p') with appropriate error messages, proceeds to next feature   | <img src="docs/images/thumbs-up.jpg"> |
 | Currency Choice   | Loop until Validated? Exit Check? | Inputs: '', letters, numbers > 5, '1' | Loops until validated ('1') with appropriate error messages, proceeds to next Check | <img src="docs/images/thumbs-up.jpg"> |
@@ -211,6 +213,31 @@ Under the conclusive user expense table, the user is asked whether they want to 
 | Expense Check | Loop until Validated? Allow another Expense Entry? 'a', Continue to User Expense Table? 'c' | Inputs: '', 't', 'a', 'c' | Loops Until Validated, Allows another expense entry 'a' - (Category Choice, then Expense Input Prompt), Continues to User Expense Table - 'c' | <img src="docs/images/thumbs-up.jpg"> |
 | User Expense Table | Display: Budget? Correct Values including Addition of Same-Category Expenses? Remainder in Colour?, Upload/Exit Check? | Manual Addition/Subtraction + Comparison | Displays all Values + Correct Colours for negative/positive budget remainder | <img src="docs/images/thumbs-up.jpg"> |
 | Upload/Exit Check | Loop until Validated? Upload ('u') or Exit ('q')? | Inputs: '', 't', 'u', | Loops until validated, Uploads + Displays Success Msg, and/or Exits on 'q' | <img src="docs/images/thumbs-up.jpg"> |
+
+## Python Linter
+After running the code through [Code Beautify](https://codebeautify.org/python-formatter-beautifier), the Code Institute Python Linter picked up on 3 unique errors: 
+
+-  E501 line too long (103 > 79 characters)
+-  E711 comparison to None should be 'if cond is None
+-  E712 comparison to False should be 'if cond is False
+
+The first is due to personal oversight, and was immediately corrected where the problem was highlighted. 
+
+The latter two were due a mix up of syntax between JS and Python, and were ammended. 
+
+A full overview can be seen below:
+
+![python linter](docs/images/linter-one.png)
+
+After fixing all issues highlighted by the linter, the code was run through the linter a second time, yielding no errors: 
+
+![clear python linter](docs/images/linter-clean.png)
+
+| Issues | Fixes |
+|----------|----------|
+| E501 line too long (x > 79 characters) | This issue was fixed by using """ """ for multi-row strings, and by concisely rewording |
+| E711 comparison to None should be 'if cond is None | By changing '==' to 'is' |
+| E712 comparison to False should be 'if cond is False | By changing '==' to 'is' |
 
 ## Issues
 There were a few issues while the project was being developed, having mostly to do with string, integer and float use cases. In the image below, you can see the user's conclusive table, in which the month, budget, and expenses are detailed. 
@@ -247,9 +274,100 @@ This application was developed using VSCode's Pylance; a fast and feature-rich l
 
 # Deployment
 
+### General Requirements:
+- Your Python code must be placed in the `run.py` file.
+- Your dependencies must be placed in the `requirements.txt` file.
+
+### General Word of Advice:
+- Take caution if editing any of the other files or your code may not deploy properly.
+
+## Creating the Heroku app
+
+### Step 1: Create an App on Heroku
+
+- Log onto your Heroku dashboard.
+
+ ![login heroku](docs/images/heroku-login.png)
+
+- Set Up an authenticator for two-factor verification. I chose Google Authenticator because I already had it pre-installed on my phone. 
+
+![google authenticator](docs/images/authenticator-heroku.png)
+
+ - Create a new app as shown in the image below:
+
+![new heroku app](docs/images/create-new-app.png)
+
+You will be asked to pick a name for your app, and select a region, before clicking _Create app_ on the next page.
+
+### Step 2: Connect to GitHub
+
+- Once you've created your app, go to the _Deploy_ tab at the top. 
+
+_Note: For demonstration purposes, I created a new app called 'gkggfk', but the process is the same everywhere._
+- Select the middle box with GitHub's logo to connect your Heroku app to a Github Repository. 
+- If prompted, authorize Heroku to access your GitHub account.
+- At the bottom, enter the name of the repository you wish to deploy to, and click _Connect_.
+
+![connecting heroku to github](docs/images/github-heroku.png)
+
+### Step 3: Automatic Deploy (Optional)
+
+- Under the "Automatic deploys" section, choose a branch from your GitHub repository that Heroku will watch for changes.
+
+- Enable automatic deploys by clicking _Enable Automatic Deploys._ With this, every push to the selected branch will automatically deploy a new version of your app.
+
+### Step 4: Extra Important Steps
+
+When you create the app, you will need to add two buildpacks from the _Settings_ tab. The ordering is as follows:
+
+1. `heroku/python`
+2. `heroku/nodejs`
+
+You must then create a _Config Var_ called `PORT`. Set this to `8000`
+
+If you have credentials, you must create another _Config Var_ called `CREDS` and paste the relevant JSON into the value field.
+
+![important steps](docs/images/important-steps.png)
+
+### Step 5: Deploy Your Masterpiece
+
+- If you've enabled automatic deploys, any push to the selected branch will automatically deploy your application.
+
+- If you prefer to deploy manually or want to deploy a branch without enabling automatic deploys, go to the "Manual deploy" section, select the branch, and click "Deploy Branch."
+
+### Step 6: Where is my Application?
+
+Your application has a similar look to the following Heroku URL: (https://<your-app-name>.herokuapp.com), and can be found after clicking the _Open App_ button on your dashboard in the top right. 
+
+![open app button](docs/images/open-app.png)
+
+## Constraints
+
+The deployment terminal is set to 80 columns by 24 rows. That means that each line of text needs to be 80 characters or less otherwise it will be wrapped onto a second line.
+
+## Forking a Github Repository
+
+To changes to your repository (or part of it) without affecting it's original state, you can 'fork' it (make a copy of it). This ensures the original repository remains unchanged. To fork a github repository, follow the following steps:
+
+- Click into the github repository you want to fork.
+- Click 'Fork' in the top right hand side of the top bar, and this should take you to a page titled 'Create a new fork'.
+- You can now work in this copy of your repository without it affecting the original.
+
+## Cloning a Github Repository
+
+- Cloning a repository essentially means downloading a copy of your repository that can be worked on locally. This method allows for version control and back up of code. To clone a github repository, follow the following steps:
+
+- Click into the github repository you want to clone.
+- Press the 'Code' button. This should open a section similar to the one below. 
+
+![clone github repository](docs/images/clone-repo.png)
+
+- Copy the link in this dropdown
+- Open a terminal within your VSC (or whatever IDE you choose to use).
+- In the terminal type 'git clone' and paste the URL.
+- Press Enter - you now have a cloned version of your github repository.
 
 # Future Development
-
 
 # Credits
 - [Currencies](https://pypi.org/project/currencies/) (Research and two lines of logic).
@@ -257,3 +375,11 @@ This application was developed using VSCode's Pylance; a fast and feature-rich l
 - [Convert Num to Letter (stack overflow)](https://stackoverflow.com/questions/18544419/how-to-convert-numbers-to-alphabet)
 - [Clear os screen](https://www.scaler.com/topics/how-to-clear-screen-in-python/)
 - [gspread.exceptions.WorksheetNotFound](https://snyk.io/advisor/python/gspread/functions/gspread.exceptions.WorksheetNotFound)
+- [screen recorder for README.md video files](https://www.screencapture.com/)
+- [pypi.org for currency conversion example](https://pypi.org/project/currencies/)
+-[snyk.io for Worksheet.NotFound](https://snyk.io/advisor/python/gspread/functions/gspread.exceptions.WorksheetNotFound)
+- [Code Beautify for beautifying my python code](https://codebeautify.org/python-formatter-beautifier)
+- [CI Python Linter](https://pep8ci.herokuapp.com/)
+
+# Acknowledgements
+Thank you to Harry Dhillon! 
