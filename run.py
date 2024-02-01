@@ -63,7 +63,7 @@ user_expenses = []
 
 def print_intro():
     """
-    Prints large heading using colorama styling library.
+    Uses colorama styling library to print large green heading.
     """
     text = text2art("Tag - Tracker")
     print(Fore.LIGHTGREEN_EX + text + Fore.RESET)
@@ -76,7 +76,7 @@ def exit_tag():
 
 def clear_terminal():
     """
-    Clears the terminal screen for improved UX.
+    Clears the terminal screen for improved UX based on os.
     """
     # For windows os.
     if os.name == "nt":
@@ -88,8 +88,11 @@ def clear_terminal():
 
 def validate_string(string):
     """
-    Validates any string input for alphabet-only characters.
-    Returns true if no digits or symbols are present.
+    Args:
+        string (str): The string input to be validated.
+
+    Returns:
+        bool: Valid string.
     """
     if not string:
         print(" ❌  Please enter a value to begin.\n")
@@ -101,8 +104,11 @@ def validate_string(string):
 
 def validate_num_selection(num):
     """
-    Validates any number input.
-    Returns true if no digits or symbols are present.
+    Args:
+        num (num): The number input to be validated.
+
+    Returns:
+        (bool): Valid number.
     """
     if not num:
         print(" ❌  Please enter a value to begin.\n")
@@ -121,7 +127,14 @@ def validate_num_selection(num):
 
 def validate_selection(selection, num_range, min_num_range=0):
     """
-    Validates using validate_num_selection() using a set number range.
+    Validates using validate_num_selection() for number validation.
+    Args:
+        selection (num): The user selection to be validated.
+        num_range (num): The maximum number that can be selected.
+        min_num_range (num): The default starting range point.
+
+    Returns:
+        bool: Valid selection (from selected choice of options).
     """
     if validate_num_selection(selection):
         if float(selection) > min_num_range and float(selection) <= num_range:
@@ -139,11 +152,16 @@ def validate_selection(selection, num_range, min_num_range=0):
 def confirm_input(user_input):
     """
     If correct, proceeds to next step. If not, loops back to function.
+    Args:
+        user_input (str): The letter to be validated.
+
+    Returns:
+        (str): Valid user_input letter.
     """
     while True:
         user_conf = input(
             f"""\n 👉  You've chosen {user_input}.
-            \n Type 'p' to proceed, 'c' to change, or 'q' to quit: """
+            Type 'p' to proceed, 'c' to change, or 'q' to quit: """
         )
         if not user_conf:
             print(" ❌  Please enter a value to continue.\n")
@@ -162,7 +180,14 @@ def confirm_input(user_input):
 
 def create_table(value, heading, colour="light_green"):
     """
-    Creates tables using predefined tuple values.
+    Prints a table using predefined tuple values.
+    Args:
+        value (tuple): The string to be iterated for row values.
+        heading (str): String to be displayed in second column.
+        colour (str): Has a default value of "light_green".
+
+    Returns:
+        None.
     """
     # Assign PrettyTable object to month_table.
     table = PrettyTable()
@@ -180,8 +205,11 @@ def create_table(value, heading, colour="light_green"):
 
 def ask_name():
     """
-    A user loop asking for name until valid input is provided.
-    Once valid, the user is asked to selected a month from the provided list.
+    A loop asking for user name.
+    If valid, calls for month selection from a provided list.
+
+    Returns:
+        (str): User's name.
     """
     while True:
         name = input("   ➤ Please tell me your name: ").strip()
@@ -196,8 +224,11 @@ def ask_name():
 
 def ask_month():
     """
-    Displays selection of month options in a table for logging expenses.
-    If valid input, asks users to select a currency to proceed with.
+    Displays selection of month options in a table.
+    If valid, calls for currency selection.
+
+    Returns:
+        (str): Month as a string.
     """
     create_table(MONTHS, "Month")
     while True:
@@ -223,7 +254,13 @@ def ask_month():
 
 def get_month_sheet(month_needed):
     """
-    Fetches the worksheet based on the month the user chose.
+    Fetches the specified month worksheet.
+
+    Args:
+        month_needed (str): Name of the specified month.
+
+    Returns:
+        Gsheet for specified month.
     """
     print(f"Fetching the '{month_needed}' worksheet...\n")
     global user_gsheet
@@ -246,8 +283,11 @@ def get_month_sheet(month_needed):
 
 def ask_curr():
     """
-    Displays selection of currency options in a table for logging expenses.
-    If valid input, asks user if they wish to continue.
+    Displays selection of currency options in a table.
+    If valid, checks in.
+
+    Returns:
+        (num): Number corresponding currency in table.
     """
     clear_terminal()
     print(f"\n ✅  You have chosen {MONTHS[int(user_month)]}.")
@@ -261,10 +301,12 @@ def ask_curr():
         if validate_selection(curr, 5):
             global user_currency
             user_currency = curr
-            user_choice = confirm_input(CURRENCY[int(curr)])
+            str_curr = CURRENCY[int(curr)]
+            user_choice = confirm_input(str_curr)
             if user_choice == "p":
                 clear_terminal()
-                print(f" ✅  You have chosen to log in '{CURRENCY[int(curr)]}'")
+                print(f" ✅  You have chosen to log in '{str_curr}'")
+                # Retrieve any existing budget from 'B1' cell.
                 current = user_gsheet.acell("B1").value
                 validate_budget_retrieval(current)
                 break
@@ -277,6 +319,13 @@ def ask_curr():
 def format_expenses(curr, expense):
     """
     Formats the user's expenses with the chosen currency symbol.
+
+    Args:
+        curr (num): Number corresponding currency in table.
+        expense (num): Value of expense.
+
+    Returns:
+        (str): Formatted Expense.
     """
     # Code taken from Currency example on pypi.org
     currency = Currency(CURRENCY[int(curr)])
@@ -286,7 +335,13 @@ def format_expenses(curr, expense):
 
 def append_budget(budget):
     """
-    Updates B1 cell in google sheets with the value of the user's budget.
+    Updates B1 cell with user's budget value.
+
+    Args:
+        budget (str): Value to be uploaded.
+
+    Returns:
+        None.
     """
     sheet = user_gsheet
     # This will change any previously logged budget in the 'B1' cell.
@@ -296,7 +351,10 @@ def append_budget(budget):
 def retrieve_budget():
     """
     Retrieves current budget value.
-    Asks user if they wish to use it or change its value.
+    Asks user whether to use or change value.
+
+    Returns:
+        (str): User input.
     """
     current = user_gsheet.acell("B1").value
     if current is None:
@@ -309,12 +367,19 @@ def retrieve_budget():
         )
         user_budget_input = input(
             """\n ➤  Would you like to use this (type 'u'),
-            or amend it? (type 'c') """
+            or amend it? (type 'c'): """
         )
         return user_budget_input
 
 
 def validate_budget_retrieval(current_budget):
+    """
+    Args:
+        current_budget (str): Value of retrieved budget.
+
+    Returns:
+        None.
+    """
     retrieved_choice = retrieve_budget()
     if retrieved_choice == "u":
         global user_budget
@@ -330,8 +395,11 @@ def validate_budget_retrieval(current_budget):
 
 def ask_budget():
     """
-    Asks user for budget and updates global budget variable.
-    If valid input, asks user if they wish to continue.
+    Asks for budget and updates global budget variable.
+    If valid, calls for category selection.
+
+    Returns:
+        (str): Currency Symbol + Value of budget.
     """
     while True:
         global user_budget
@@ -364,8 +432,11 @@ def ask_budget():
 
 def ask_category():
     """
-    Displays selection of category options in a table for logging expenses.
-    If valid input, asks user if they wish to continue.
+    Displays categories in a table.
+    If valid, calls for expense value.
+
+    Returns:
+        (num): Number corresponding to category.
     """
     create_table(EXPENSES, "Expense Category")
     while True:
@@ -380,16 +451,17 @@ def ask_category():
         elif validate_selection(cat, 6) is False:
             continue
         elif validate_selection(cat, 6):
-            user_choice = confirm_input(EXPENSES[int(cat)])
+            exp = EXPENSES[int(cat)]
+            user_choice = confirm_input(exp)
             if user_choice == "p":
                 if int(cat) == 1 or int(cat) == 2:
-                    print(f"\n ✅  Ouch...spending on {EXPENSES[int(cat)]}...")
+                    print(f"\n ✅  Ouch...spending on {exp}...")
                 elif int(cat) > 2 and int(cat) != 6:
                     print(
                         f"""\n ✅  Ooo...spending
-                    on {EXPENSES[int(cat)]}? Nice!"""
+                    on {exp}? Nice!"""
                     )
-                ask_expense(EXPENSES[int(cat)])
+                ask_expense(exp)
             elif user_choice == "c":
                 ask_category()
         return cat
@@ -397,8 +469,14 @@ def ask_category():
 
 def ask_expense(category):
     """
-    Asks user for expense in the chosen category.
-    If valid input, asks user if they wish to continue.
+    Asks for expense in category.
+    If valid, calls expense loop.
+
+    Args:
+        category (str): Category to log expense in.
+
+    Returns:
+        (num): Expense value in category.
     """
     while True:
         expense_msg = f"   ➤ Please enter the amount you spent on {category}: "
@@ -410,7 +488,8 @@ def ask_expense(category):
             print(f" ❌  Please enter your expenses for {category}")
             continue
         elif validate_num_selection(user_expense):
-            user_choice = confirm_input(user_expense)
+            form_expense = format_expenses(user_currency, user_expense)
+            user_choice = confirm_input(form_expense)
             if user_choice == "p":
                 print(" ✅  Thanks!\n ⌛  Updating your expense log...")
                 # Push the expense into the global user_expenses list.
@@ -424,12 +503,17 @@ def ask_expense(category):
                     break
             elif user_choice == "c":
                 ask_expense(category)
+            elif user_choice == "q":
+                exit_tag()
     return user_expense
 
 
 def continue_expenses():
     """
-    Loop asking the user if they want to log another expense, with validation.
+    Expense logging loop with validation.
+
+    Returns:
+        (bool): Another expense or continue.
     """
     while True:
         user_answer = input(
@@ -448,28 +532,39 @@ def continue_expenses():
 def check_list():
     """
     Checks the user's logged expenses list for duplicate categories.
-    If found, merges and adds their expense values together.
+    If found, merges categories and adds values.
+
+    Returns:
+        (dict): Non-duplicated expenses.
     """
     # Gets the logged expenses - may contain duplicates.
     global user_expenses
-    duplicates = {}
+    non_duplicates = {}
     for item in user_expenses:
         cat, value = item
         # Checks if the category (key) is already in the duplicates dictionary.
-        if cat in duplicates:
+        if cat in non_duplicates:
             # If it is, it adds the values together.
-            duplicates[cat] += round(float(value), 2)
+            non_duplicates[cat] += round(float(value), 2)
         else:
             # Adds the key and value to the dictionary.
-            duplicates[cat] = round(float(value), 2)
+            non_duplicates[cat] = round(float(value), 2)
     # Re-assign the global variable the value of duplicates.
-    user_expenses = duplicates
-    return duplicates
+    user_expenses = non_duplicates
+    return non_duplicates
 
 
 def create_expense(month, budget, colour="light_green"):
     """
-    Creates final table to display all user input.
+    Prints conclusive user table with budget + expenses.
+
+    Args:
+        month (num): Num corresponding to Month selection.
+        budget (str): Formatted budget.
+        colour (str): Has default value of "light_green".
+
+    Returns:
+        None.
     """
     # Assign PrettyTable object to month_table.
     table = PrettyTable()
@@ -512,6 +607,10 @@ def create_expense(month, budget, colour="light_green"):
 
 
 def calculate_budget_remainder():
+    """
+    Returns:
+        (str): Remainder of budget after expense(s) deduction.
+    """
     # Get the unformatted version of budget.
     global user_budget
     unformatted_budget = user_budget[1:]
@@ -528,8 +627,10 @@ def calculate_budget_remainder():
 
 def ask_update():
     """
-    Asks user whether to update google sheets with their values
-    or provide some advice for future spending.
+    Asks to update google sheets or quit application.
+
+    Returns:
+        None.
     """
     while True:
         print("\nWould you like to upload your expenses to Google Sheets?\n")
@@ -558,7 +659,8 @@ def ask_update():
 
 def format_data():
     """
-    Formats data for the google sheet.
+    Returns:
+        (array): sorted user expenses.
     """
     format = {
         "Rent": "",
@@ -578,18 +680,19 @@ def format_data():
 def expensive_battleships():
     """
     Adds two parameters to create a cell format, e.g. 'C3'.
+
+    Returns:
+        (array): cells to be updated.
     """
     sheet = SHEET.worksheet("Overview")
     global user_month
-    # The list user_expenses was changed to a dictionary in check_list().
+    # List user_expenses changed to dict in check_list().
     global user_expenses
 
-    # The user inputs a number when selecting a month.
-    # This row holds all the values for updating after the initial log.
-    # + 1 is added to get the next cell (headers being in the first row).
+    # Num input for month.
+    # + 1 is added to get the next cell after headers.
     battleship_two = int(user_month) + 1
     used_keys = list(user_expenses.keys())
-    # Stores the column indexes of the logged expenses.
     column_indexes = []
 
     for key in used_keys:
@@ -609,7 +712,13 @@ def expensive_battleships():
 
 def num_lett(num):
     """
-    Converts ASCII code to character using Python's built-in chr function.
+    Converts ASCII code to character using built-in chr function.
+
+    Args:
+        num (num): Value to be converted to string.
+
+    Returns:
+        (str): Letter.
     """
     if 1 <= num <= 7:
         # chr(65) = A
@@ -617,6 +726,12 @@ def num_lett(num):
 
 
 def update_cell_values():
+    """
+    Updates "Overview" sheet with values.
+
+    Returns:
+        None.
+    """
     cells_to_update = expensive_battleships()
     user_logs = list(user_expenses.values())
     OVERVIEW = SHEET.worksheet("Overview")
@@ -632,17 +747,20 @@ def update_cell_values():
             OVERVIEW.update_acell(cell, addition)
     print(
         f"""\n ✅  We've successfully updated your
-        Month sheet and annual Overview sheet!"""
+    Month sheet and annual Overview sheet!"""
     )
     print(
         """Tip: Make sure to check this sheet regularly
-        to stay on top of your spending habits :)\n"""
+    to stay on top of your spending habits :)\n"""
     )
 
 
 def update_worksheet():
     """
-    Updates relevant Google Sheets with user's expenses.
+    Updates relevant Google Sheet with user's expenses.
+
+    Returns:
+        None.
     """
     print("   ⌛  Updating your worksheet...")
     expenses = format_data()
@@ -653,6 +771,12 @@ def update_worksheet():
 
 
 def main():
+    """
+    Starts application.
+
+    Returns:
+        None.
+    """
     print_intro()
     ask_name()
 
