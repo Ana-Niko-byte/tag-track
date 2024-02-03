@@ -1,6 +1,5 @@
 import gspread
 import os
-import PyCurrency_Converter
 from google.oauth2.service_account import Credentials
 from art import *
 from colorama import Fore
@@ -32,7 +31,7 @@ MONTHS = {
 
 # Currency the user can select for logging an expense.
 CURRENCY = {1: "EUR", 2: "GBP", 3: "USD", 4: "AUD", 5: "UAH"}
-SYMBOLS = {"€": "EUR", "£": "GBP", "$": "USD", "$": "AUD", " ₴": "UAH"}
+SYMBOLS = {"€": "EUR", "£": "GBP", "$": "USD", "$": "AUD", "₴": "UAH"}
 
 # Categories the user can select for logging an expense.
 EXPENSES = {
@@ -244,18 +243,66 @@ def ask_month():
             user_choice = confirm_input(month_name)
             if user_choice == "p":
                 get_month_sheet(month_name)
-                budg = user_gsheet.acell("B1").value
-                if budg is None:
-                    ask_curr()
-                else:
-                    current_curr = SYMBOLS[budg[0]]
-                    curr_result = [number for number, curr in CURRENCY.items() if curr == current_curr][0]
-                    validate_curr_retrieval(curr_result)
+                validate_currbudget()
             elif user_choice == "c":
                 clear_terminal()
                 ask_month()
             break
     return month_name
+
+
+def validate_currbudget():
+    """
+    Validates currency and budget for changes.
+    """
+    print('validating currency and budget....')
+    budg = user_gsheet.acell("B1").value
+    if budg is None:
+        ask_curr()
+    else:
+        currency = SYMBOLS[budg[0]]
+        budget = budg[1:]
+        print(budget)
+        user_choice = retrieve_currbudget()
+        if user_choice == 'u':
+            global user_currency
+            global user_budget
+            user_currency =  currency
+            user_budget = budget
+            print(
+                f"""Your budget remains at {budg}
+                for the month of {MONTHS[int(user_month)]}."""
+            )
+            ask_category()
+        elif user_choice == 'c':
+            ask_curr()
+        else:
+            print(
+                    f""" ❌  Invalid input.
+                    \n 👉  Please choose either 'u', or 'c' to proceed."""
+                )
+
+
+def retrieve_currbudget():
+    """
+    Retrieves current budget value.
+    Asks user whether to use or change value.
+
+    Returns:
+        (str): User input.
+    """
+    current = user_gsheet.acell("B1").value
+    if current:
+        clear_terminal()
+        print(
+            f"""\n ⚠️  Your budget for the month of
+            {MONTHS[int(user_month)]} is currently set to {current}.⚠️"""
+        )
+        user_budget_input = input(
+            """\n ➤  Would you like to use this (type 'u'),
+            or change it? (type 'c'): """
+        )
+        return user_budget_input
 
 
 def get_month_sheet(month_needed):
@@ -309,9 +356,7 @@ def ask_curr():
             if user_choice == "p":
                 clear_terminal()
                 print(f" ✅  You have chosen to log in '{str_curr}'")
-                # Retrieve any existing budget from 'B1' cell.
-                current = user_gsheet.acell("B1").value
-                validate_budget_retrieval(current)
+                ask_budget()
                 break
             elif user_choice == "c":
                 ask_curr()
@@ -351,99 +396,6 @@ def append_budget(budget):
     sheet.update_acell("B1", budget)
 
 
-def retrieve_budget():
-    """
-    Retrieves current budget value.
-    Asks user whether to use or change value.
-
-    Returns:
-        (str): User input.
-    """
-    current = user_gsheet.acell("B1").value
-    if current:
-        clear_terminal()
-        print(
-            f"""\n ⚠️  Your budget for the month of
-            {MONTHS[int(user_month)]} is currently set to {current}.⚠️"""
-        )
-        user_budget_input = input(
-            """\n ➤  Would you like to use the existing (type 'u'),
-            or change it? (type 'c'): """
-        )
-        return user_budget_input
-    else:
-        ask_budget()
-
-
-def retrieve_currency():
-    """
-    Returns:
-        (str): Current currency symbol in current budget.
-    """
-    budg = user_gsheet.acell("B1").value
-    if budg:
-        clear_terminal()
-        word_curr = SYMBOLS[budg[0]]
-        print(f"You previously logged in {word_curr}.")
-        user_curr_input = input(
-            """\n ➤  Would you like to use the existing (type 'u'),
-            or choose a different currency? (type 'c'): """
-        )
-        return user_curr_input
-    else:
-        ask_curr()
-
-
-def validate_budget_retrieval(current_budget):
-    """
-    Args:
-        current_budget (str): Value of retrieved budget.
-
-    Returns:
-        None.
-    """
-    retrieved_choice = retrieve_budget()
-    if retrieved_choice == "u":
-        global user_budget
-        user_budget = current_budget
-        print(
-            f"""Your budget remains at {current_budget}
-            for the month of {MONTHS[int(user_month)]}."""
-        )
-        ask_category()
-    elif retrieved_choice == "c":
-        ask_budget()
-
-
-def validate_curr_retrieval(current_curr):
-    budg = user_gsheet.acell("B1").value
-    if budg is None:
-        ask_curr()
-    else:
-        current_curr = SYMBOLS[budg[0]]
-        curr_result = [number for number, curr in CURRENCY.items() if curr == current_curr][0]
-    while True:
-        retrieved_curr = retrieve_currency()
-        if retrieved_curr == "u":
-            global user_currency
-            user_currency = current_curr
-            print(
-                f"""Your currency is {current_curr}
-                for the month of {MONTHS[int(user_month)]}."""
-            )            
-            ask_budget()
-            break
-        elif retrieved_curr == 'c':
-            ask_curr()
-            break
-        else:
-            print(
-                    f""" ❌  Invalid input.
-                    \n 👉  Please choose either 'u', or 'c' to proceed."""
-                )
-            continue
-
-
 def ask_budget():
     """
     Asks for budget and updates global budget variable.
@@ -477,8 +429,7 @@ def ask_budget():
                 ask_category()
                 return user_budget
             elif user_choice == "c":
-                current = user_gsheet.acell("B1").value
-                validate_budget_retrieval(current)
+                ask_budget()
 
 
 def ask_category():
@@ -663,10 +614,6 @@ def calculate_budget_remainder():
     # Get the total of the user's expenses.
     total = sum(user_expenses.values())
     total = str(total)
-    # if user_currency == '5':
-    #     unformatted_budget = user_budget[:-3]
-    #     remainder = round(float(unformatted_budget) - float(total), 2)
-    # else:
     unformatted_budget = user_budget[1:]
     numeric_budget = float(unformatted_budget.replace(",", ""))
     remainder = round(numeric_budget - float(total), 2)
