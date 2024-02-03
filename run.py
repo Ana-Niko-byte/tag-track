@@ -1,5 +1,6 @@
 import gspread
 import os
+import PyCurrency_Converter
 from google.oauth2.service_account import Credentials
 from art import *
 from colorama import Fore
@@ -30,7 +31,8 @@ MONTHS = {
 }
 
 # Currency the user can select for logging an expense.
-CURRENCY = {1: "EUR", 2: "GBP", 3: "USD", 4: "AUD", 5: "PLN"}
+CURRENCY = {1: "EUR", 2: "GBP", 3: "USD", 4: "AUD", 5: "UAH"}
+SYMBOLS = {"€": "EUR", "£": "GBP", "$": "USD", "$": "AUD", " ₴": "UAH"}
 
 # Categories the user can select for logging an expense.
 EXPENSES = {
@@ -70,6 +72,7 @@ def print_intro():
 
 
 def exit_tag():
+    clear_terminal()
     print_intro()
     print(f"\n 👋  Thanks for using Tag-Track! See you soon :) \n")
 
@@ -233,10 +236,7 @@ def ask_month():
     create_table(MONTHS, "Month")
     while True:
         global user_month
-        print(
-            """\n (💡  Type the 'No.' that corresponds
-        to the Month you want :) )"""
-        )
+        print("\n (💡  Type the 'No.' )")
         month = input(" ➤  Please choose the month you want to log for: ")
         user_month = month
         if validate_selection(month, 12):
@@ -244,7 +244,13 @@ def ask_month():
             user_choice = confirm_input(month_name)
             if user_choice == "p":
                 get_month_sheet(month_name)
-                ask_curr()  # retrieve_currency()
+                budg = user_gsheet.acell("B1").value
+                if budg is None:
+                    ask_curr()
+                else:
+                    current_curr = SYMBOLS[budg[0]]
+                    curr_result = [number for number, curr in CURRENCY.items() if curr == current_curr][0]
+                    validate_curr_retrieval(curr_result)
             elif user_choice == "c":
                 clear_terminal()
                 ask_month()
@@ -293,10 +299,7 @@ def ask_curr():
     print(f"\n ✅  You have chosen {MONTHS[int(user_month)]}.")
     create_table(CURRENCY, "Currency")
     while True:
-        print(
-            """\n (💡 Type the 'No.' that
-        corresponds to the Currency you want ;))"""
-        )
+        print("\n (💡 Type the 'No.' ")
         curr = input(" ➤  Please choose the currency you wish to log in: ")
         if validate_selection(curr, 5):
             global user_currency
@@ -357,19 +360,38 @@ def retrieve_budget():
         (str): User input.
     """
     current = user_gsheet.acell("B1").value
-    if current is None:
-        ask_budget()
-    elif current:
+    if current:
         clear_terminal()
         print(
             f"""\n ⚠️  Your budget for the month of
             {MONTHS[int(user_month)]} is currently set to {current}.⚠️"""
         )
         user_budget_input = input(
-            """\n ➤  Would you like to use this (type 'u'),
-            or amend it? (type 'c'): """
+            """\n ➤  Would you like to use the existing (type 'u'),
+            or change it? (type 'c'): """
         )
         return user_budget_input
+    else:
+        ask_budget()
+
+
+def retrieve_currency():
+    """
+    Returns:
+        (str): Current currency symbol in current budget.
+    """
+    budg = user_gsheet.acell("B1").value
+    if budg:
+        clear_terminal()
+        word_curr = SYMBOLS[budg[0]]
+        print(f"You previously logged in {word_curr}.")
+        user_curr_input = input(
+            """\n ➤  Would you like to use the existing (type 'u'),
+            or choose a different currency? (type 'c'): """
+        )
+        return user_curr_input
+    else:
+        ask_curr()
 
 
 def validate_budget_retrieval(current_budget):
@@ -391,6 +413,35 @@ def validate_budget_retrieval(current_budget):
         ask_category()
     elif retrieved_choice == "c":
         ask_budget()
+
+
+def validate_curr_retrieval(current_curr):
+    budg = user_gsheet.acell("B1").value
+    if budg is None:
+        ask_curr()
+    else:
+        current_curr = SYMBOLS[budg[0]]
+        curr_result = [number for number, curr in CURRENCY.items() if curr == current_curr][0]
+    while True:
+        retrieved_curr = retrieve_currency()
+        if retrieved_curr == "u":
+            global user_currency
+            user_currency = current_curr
+            print(
+                f"""Your currency is {current_curr}
+                for the month of {MONTHS[int(user_month)]}."""
+            )            
+            ask_budget()
+            break
+        elif retrieved_curr == 'c':
+            ask_curr()
+            break
+        else:
+            print(
+                    f""" ❌  Invalid input.
+                    \n 👉  Please choose either 'u', or 'c' to proceed."""
+                )
+            continue
 
 
 def ask_budget():
@@ -440,10 +491,7 @@ def ask_category():
     """
     create_table(EXPENSES, "Expense Category")
     while True:
-        print(
-            """\n (💡  Type the 'No.' that
-        corresponds to the Category you want :) )"""
-        )
+        print("\n (💡  Type the 'No.' )")
         cat = input(" ➤  Please choose a category: ")
         if cat == "":
             print(" ❌  Please choose a category to log an expense.")
@@ -482,8 +530,6 @@ def ask_expense(category):
         expense_msg = f"   ➤ Please enter the amount you spent on {category}: "
         user_expense = input(expense_msg)
         global user_expenses
-        global user_month
-        global user_budget
         if user_expense == "":
             print(f" ❌  Please enter your expenses for {category}")
             continue
@@ -583,7 +629,8 @@ def create_expense(month, budget, colour="light_green"):
         table.align = "l"
 
     remainder = calculate_budget_remainder()
-    remainder_value = float(remainder[1:])
+    remainder_value = float(remainder[1:].replace(",", ""))
+    print(remainder_value)
     # Add separating rows to the table to differentiate final data.
     table.add_row(["-----------------------", "-----------------------"])
     # Check if budget is '-' or '+' to determine colour of final table row.
@@ -605,7 +652,6 @@ def create_expense(month, budget, colour="light_green"):
     print(f"\n{table}")
     ask_update()
 
-
 def calculate_budget_remainder():
     """
     Returns:
@@ -613,10 +659,15 @@ def calculate_budget_remainder():
     """
     # Get the unformatted version of budget.
     global user_budget
-    unformatted_budget = user_budget[1:]
+    global user_currency
     # Get the total of the user's expenses.
     total = sum(user_expenses.values())
     total = str(total)
+    # if user_currency == '5':
+    #     unformatted_budget = user_budget[:-3]
+    #     remainder = round(float(unformatted_budget) - float(total), 2)
+    # else:
+    unformatted_budget = user_budget[1:]
     numeric_budget = float(unformatted_budget.replace(",", ""))
     remainder = round(numeric_budget - float(total), 2)
     # Update the global variable for the remainder.
