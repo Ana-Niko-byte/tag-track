@@ -51,9 +51,7 @@ SHEET = GSPREAD_CLIENT.open("Tag-Track")
 # List of read-only headers from google sheets.
 # These are used in user-feedback throughout the application.
 COLUMNS = []
-# List of global variables:
-# - user_gsheet -> google sheet,
-# user_budget -> user budget for the month.
+
 user_month = None
 user_gsheet = None
 user_budget = None
@@ -251,38 +249,6 @@ def ask_month():
     return month_name
 
 
-def validate_currbudget():
-    """
-    Validates currency and budget for changes.
-    """
-    print('validating currency and budget....')
-    budg = user_gsheet.acell("B1").value
-    if budg is None:
-        ask_curr()
-    else:
-        currency = SYMBOLS[budg[0]]
-        budget = budg[1:]
-        print(budget)
-        user_choice = retrieve_currbudget()
-        if user_choice == 'u':
-            global user_currency
-            global user_budget
-            user_currency =  currency
-            user_budget = budget
-            print(
-                f"""Your budget remains at {budg}
-                for the month of {MONTHS[int(user_month)]}."""
-            )
-            ask_category()
-        elif user_choice == 'c':
-            ask_curr()
-        else:
-            print(
-                    f""" ❌  Invalid input.
-                    \n 👉  Please choose either 'u', or 'c' to proceed."""
-                )
-
-
 def retrieve_currbudget():
     """
     Retrieves current budget value.
@@ -303,6 +269,40 @@ def retrieve_currbudget():
             or change it? (type 'c'): """
         )
         return user_budget_input
+
+
+def validate_currbudget():
+    """
+    Calls functions based on user procedure choice.
+
+    Returns:
+        None.
+    """
+    budg = user_gsheet.acell("B1").value
+    if budg is None:
+        ask_curr()
+    else:
+        currency = SYMBOLS[budg[0]]
+        num_curr = [number for number, curr in CURRENCY.items() if curr == currency][0]
+        budget = budg[1:]
+        user_choice = retrieve_currbudget()
+        if user_choice == "u":
+            global user_currency
+            global user_budget
+            user_currency = num_curr
+            user_budget = budget
+            print(
+                f""" ✅  Budget for the month of {
+                    MONTHS[int(user_month)]}: {budg}"""
+            )
+            ask_category()
+        elif user_choice == "c":
+            ask_curr()
+        else:
+            print(
+                f""" ❌  Invalid input.
+                    \n 👉  Please choose either 'u', or 'c' to proceed."""
+            )
 
 
 def get_month_sheet(month_needed):
@@ -453,13 +453,6 @@ def ask_category():
             exp = EXPENSES[int(cat)]
             user_choice = confirm_input(exp)
             if user_choice == "p":
-                if int(cat) == 1 or int(cat) == 2:
-                    print(f"\n ✅  Ouch...spending on {exp}...")
-                elif int(cat) > 2 and int(cat) != 6:
-                    print(
-                        f"""\n ✅  Ooo...spending
-                    on {exp}? Nice!"""
-                    )
                 ask_expense(exp)
             elif user_choice == "c":
                 ask_category()
@@ -602,6 +595,7 @@ def create_expense(month, budget, colour="light_green"):
     clear_terminal()
     print(f"\n{table}")
     ask_update()
+
 
 def calculate_budget_remainder():
     """

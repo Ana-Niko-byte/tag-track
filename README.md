@@ -45,7 +45,7 @@ The structure of the 'Tag Track' application is as follows:
     - GBP
     - USD
     - AUD
-    - PLN
+    - UAH
 - Total Monthly Budget input prompt with validation
     - Or budget retrieval system based on the user's month selection. 
 - _Press 'Enter' to Continue OR Type 'q' to quit..._
