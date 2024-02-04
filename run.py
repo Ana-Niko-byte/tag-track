@@ -2,6 +2,8 @@ import gspread
 import os
 from google.oauth2.service_account import Credentials
 from art import *
+from forex_python.converter import CurrencyRates
+from decimal import Decimal
 from colorama import Fore
 from prettytable import PrettyTable
 from termcolor import colored
@@ -64,6 +66,7 @@ def print_intro():
     """
     Uses colorama styling library to print large green heading.
     """
+    clear_terminal()
     text = text2art("Tag - Tracker")
     print(Fore.LIGHTGREEN_EX + text + Fore.RESET)
 
@@ -278,31 +281,35 @@ def validate_currbudget():
     Returns:
         None.
     """
-    budg = user_gsheet.acell("B1").value
-    if budg is None:
-        ask_curr()
-    else:
-        currency = SYMBOLS[budg[0]]
-        num_curr = [number for number, curr in CURRENCY.items() if curr == currency][0]
-        budget = budg[1:]
-        user_choice = retrieve_currbudget()
-        if user_choice == "u":
-            global user_currency
-            global user_budget
-            user_currency = num_curr
-            user_budget = budget
-            print(
-                f""" ✅  Budget for the month of {
-                    MONTHS[int(user_month)]}: {budg}"""
-            )
-            ask_category()
-        elif user_choice == "c":
+    while True:
+        budg = user_gsheet.acell("B1").value
+        if budg is None:
             ask_curr()
         else:
-            print(
-                f""" ❌  Invalid input.
-                    \n 👉  Please choose either 'u', or 'c' to proceed."""
-            )
+            currency = SYMBOLS[budg[0]]
+            num_curr = [number for number, curr in CURRENCY.items() if curr == currency][0]
+            budget = budg[1:]
+            user_choice = retrieve_currbudget()
+            if user_choice == "u":
+                global user_currency
+                global user_budget
+                user_currency = num_curr
+                user_budget = budget
+                print(
+                    f""" ✅  Budget for the month of {
+                        MONTHS[int(user_month)]}: {budg}"""
+                )
+                ask_category()
+                break
+            elif user_choice == "c":
+                curr = ask_curr()
+                break
+            else:
+                print(
+                    f""" ❌  Invalid input.
+                        \n 👉  Please choose either 'u', or 'c' to proceed."""
+                )
+                continue
 
 
 def get_month_sheet(month_needed):
@@ -349,6 +356,7 @@ def ask_curr():
         print("\n (💡 Type the 'No.' ")
         curr = input(" ➤  Please choose the currency you wish to log in: ")
         if validate_selection(curr, 5):
+            fetch_gsheet_exp(curr)
             global user_currency
             user_currency = curr
             str_curr = CURRENCY[int(curr)]
@@ -362,6 +370,47 @@ def ask_curr():
                 ask_curr()
             break
     return curr
+
+
+def fetch_gsheet_exp(old_curr):
+    print(f'converting your previous expenses into {CURRENCY[int(old_curr)]}...')
+    all_v = user_gsheet.get_all_values()
+    no_heads = all_v[2:]
+    row_amount = len(no_heads)
+
+    # Code from forex-python documentation
+    c = CurrencyRates()
+    rate = c.get_rate('UAH', 'USD')
+
+    all_rows = []
+    for expense in no_heads:
+        updates = []
+        for value in expense:
+            # Check for non-empy string.
+            if value:
+                value = Decimal(value[1:])
+
+                new_amount = c.convert('UAH', 'USD', value)
+                # Get rid of 'Decimal' class through float conversion.
+                dec_amount = float(round((new_amount), 2))
+                form_amount = format_expenses(3, dec_amount)
+                updates.append(form_amount)
+            else:
+                updates.append(value)
+                continue
+            # user_gsheet.append_row()
+        print(updates)
+        all_rows.append(updates)
+        # user_gsheet.append_row(updates)
+    print(all_rows)
+    for i in range(3, row_amount + 3):
+        clear_range = [f"A{i}:F{i}"]
+        user_gsheet.batch_clear(clear_range)
+        print('cleared!')
+    for row in all_rows:
+        print(row)
+        user_gsheet.append_row(row)
+
 
 
 def format_expenses(curr, expense):

@@ -378,6 +378,7 @@ To changes to your repository (or part of it) without affecting it's original st
 -[snyk.io for Worksheet.NotFound](https://snyk.io/advisor/python/gspread/functions/gspread.exceptions.WorksheetNotFound)
 - [Code Beautify for beautifying my python code](https://codebeautify.org/python-formatter-beautifier)
 - [CI Python Linter](https://pep8ci.herokuapp.com/)
+- [Forex Python for Currency Conversion](https://forex-python.readthedocs.io/en/latest/usage.html)
 
 # Acknowledgements
 Thank you to Harry Dhillon! 
