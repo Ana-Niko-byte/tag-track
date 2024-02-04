@@ -356,7 +356,8 @@ def ask_curr():
         print("\n (💡 Type the 'No.' ")
         curr = input(" ➤  Please choose the currency you wish to log in: ")
         if validate_selection(curr, 5):
-            fetch_gsheet_exp(curr)
+            determine_currency()
+            # fetch_gsheet_exp(curr)
             global user_currency
             user_currency = curr
             str_curr = CURRENCY[int(curr)]
@@ -372,18 +373,39 @@ def ask_curr():
     return curr
 
 
+def determine_currency():
+    """
+    Determines currency of each logged expense in Month sheet.
+
+    Returns:
+        (list): number of currency in currency table.
+    """
+    all_v = user_gsheet.get_all_values()[2:]
+    for expense in all_v:
+        curr_table_num = []
+        for value in expense:
+            if value:
+                currency = SYMBOLS[value[0]]
+                num_curr = [number for number, curr in CURRENCY.items() if curr == currency][0]
+                curr_table_num.append(num_curr)
+            else:
+                curr_table_num.append(value)
+                continue
+        return curr_table_num
+
+
+
 def fetch_gsheet_exp(old_curr):
     print(f'converting your previous expenses into {CURRENCY[int(old_curr)]}...')
-    all_v = user_gsheet.get_all_values()
-    no_heads = all_v[2:]
-    row_amount = len(no_heads)
+    all_v = user_gsheet.get_all_values()[2:]
+    row_amount = len(all_v)
 
     # Code from forex-python documentation
     c = CurrencyRates()
     rate = c.get_rate('UAH', 'USD')
 
     all_rows = []
-    for expense in no_heads:
+    for expense in all_v:
         updates = []
         for value in expense:
             # Check for non-empy string.
