@@ -356,10 +356,9 @@ def ask_curr():
         print("\n (💡 Type the 'No.' ")
         curr = input(" ➤  Please choose the currency you wish to log in: ")
         if validate_selection(curr, 5):
-            determine_currency()
-            # fetch_gsheet_exp(curr)
             global user_currency
             user_currency = curr
+            fetch_gsheet_exp(curr)
             str_curr = CURRENCY[int(curr)]
             user_choice = confirm_input(str_curr)
             if user_choice == "p":
@@ -373,25 +372,28 @@ def ask_curr():
     return curr
 
 
-def determine_currency():
-    """
-    Determines currency of each logged expense in Month sheet.
+# def determine_currency():
+#     """
+#     Determines currency of each logged expense in Month sheet.
+#     Necessary in case more than one type of currency used. 
 
-    Returns:
-        (list): number of currency in currency table.
-    """
-    all_v = user_gsheet.get_all_values()[2:]
-    for expense in all_v:
-        curr_table_num = []
-        for value in expense:
-            if value:
-                currency = SYMBOLS[value[0]]
-                num_curr = [number for number, curr in CURRENCY.items() if curr == currency][0]
-                curr_table_num.append(num_curr)
-            else:
-                curr_table_num.append(value)
-                continue
-        return curr_table_num
+#     Returns:
+#         (list): number of currency in currency table.
+#     """
+#     all_v = user_gsheet.get_all_values()[2:]
+#     comprehensive = []
+#     for expense in all_v:
+#         curr_table_num = []
+#         for value in expense:
+#             if value:
+#                 currency = SYMBOLS[value[0]]
+#                 num_curr = [number for number, curr in CURRENCY.items() if curr == currency][0]
+#                 curr_table_num.append(num_curr)
+#             else:
+#                 curr_table_num.append(value)
+#                 continue
+#         comprehensive.append(curr_table_num)
+#     return comprehensive
 
 
 
@@ -400,39 +402,52 @@ def fetch_gsheet_exp(old_curr):
     all_v = user_gsheet.get_all_values()[2:]
     row_amount = len(all_v)
 
-    # Code from forex-python documentation
+    # # Original currencies of each logged expense.
+    # old_currs = determine_currency()
+
+    # Code from forex-python documentation.
     c = CurrencyRates()
-    rate = c.get_rate('UAH', 'USD')
+    # rate = c.get_rate('UAH', 'USD')
 
     all_rows = []
+    comprehensive = []
     for expense in all_v:
         updates = []
+        curr_table_num = []
         for value in expense:
-            # Check for non-empy string.
             if value:
-                value = Decimal(value[1:])
+                symbol = SYMBOLS[value[0]]
+                num_curr = [number for number, curr in CURRENCY.items() if curr == symbol][0]
+                curr_table_num.append(num_curr)
+                # In the case of 'GBP' where the value is '3,000'.
+                value = Decimal(value[1:].replace(",", ""))
 
-                new_amount = c.convert('UAH', 'USD', value)
+                # new_amount = c.convert('UAH', 'USD', value)
+                new_amount = convert_gsheet_exp(num_curr, user_currency, value)
                 # Get rid of 'Decimal' class through float conversion.
                 dec_amount = float(round((new_amount), 2))
-                form_amount = format_expenses(3, dec_amount)
+                form_amount = format_expenses(user_currency, dec_amount)
                 updates.append(form_amount)
             else:
+                curr_table_num.append(value)
                 updates.append(value)
                 continue
-            # user_gsheet.append_row()
-        print(updates)
         all_rows.append(updates)
-        # user_gsheet.append_row(updates)
-    print(all_rows)
+        comprehensive.append(curr_table_num)
+    print(comprehensive)
     for i in range(3, row_amount + 3):
         clear_range = [f"A{i}:F{i}"]
         user_gsheet.batch_clear(clear_range)
         print('cleared!')
     for row in all_rows:
-        print(row)
         user_gsheet.append_row(row)
 
+
+def convert_gsheet_exp(old_curr, chosen_curr, exp):
+    # Code from forex-python documentation.
+    c = CurrencyRates()
+    new_amount = c.convert(CURRENCY[int(old_curr)], CURRENCY[int(chosen_curr)], exp)
+    return new_amount
 
 
 def format_expenses(curr, expense):
