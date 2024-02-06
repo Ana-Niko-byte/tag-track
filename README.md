@@ -267,6 +267,10 @@ This error was encountered after implementing a function that would clear the te
 ![terminal clear function windows](docs/images/clear-function-windows.png)
 ![terminal clear solution](docs/images/terminal-clear-all.png)
 
+### Currency Conversion Value Bug
+
+After running a conversion from one currency to another using the same values, the conversion values showed differences on average of .40 in several instances. This issue was likely due to the way the program was designed, where the user's logged expenses were not correctly rounded to 2 decimals.
+
 # Accessibility & Performance
 This application was developed using VSCode's Pylance; a fast and feature-rich language server for Python that provides excellent IntelliSense capabilities. It enhances your development experience with: Type checking. Autocompletion.
 
