@@ -108,7 +108,7 @@ def validate_string(string):
 def validate_num_selection(num):
     """
     Args:
-        num (num): The number input to be validated.
+        num (float): The number input to be validated.
 
     Returns:
         (bool): Valid number.
@@ -116,7 +116,6 @@ def validate_num_selection(num):
     if not num:
         print(" ❌  Please enter a value to begin.\n")
         return False
-        # Allow decimal point values.
     try:
         if not all(float(digit) for digit in num.split()):
             print(" ❌  Why you not using digits only, bro?\n")
@@ -132,7 +131,7 @@ def validate_selection(selection, num_range, min_num_range=0):
     """
     Validates using validate_num_selection() for number validation.
     Args:
-        selection (num): The user selection to be validated.
+        selection (float): The user selection to be validated.
         num_range (num): The maximum number that can be selected.
         min_num_range (num): The default starting range point.
 
@@ -152,7 +151,7 @@ def validate_selection(selection, num_range, min_num_range=0):
         return False
 
 
-def confirm_input(user_input):
+def confirm_input(user_input, additional="."):
     """
     If correct, proceeds to next step. If not, loops back to function.
     Args:
@@ -163,7 +162,7 @@ def confirm_input(user_input):
     """
     while True:
         user_conf = input(
-            f"""\n 👉  You've chosen {user_input}.
+            f"""\n 👉  You've chosen {user_input}{additional}
             Type 'p' to proceed, 'c' to change, or 'q' to quit: """
         )
         if not user_conf:
@@ -266,8 +265,10 @@ def retrieve_currbudget():
         print(
             f"""\n ⚠️  Your budget for the month of
             {MONTHS[int(user_month)]} is currently set to {current}.⚠️"""
-        )        
-        print(f'If you choose a new currency, all previously logged expenses for the month of {MONTHS[int(user_month)]} will be changed according to the current conversion rate.')
+        )
+        print(
+            f"If you choose a new currency, all previously logged expenses for the month of {MONTHS[int(user_month)]} will be changed according to the current conversion rate."
+        )
         user_budget_input = input(
             """\n ➤  Would you like to use this (type 'u'),
             or change it? (type 'c'): """
@@ -288,7 +289,9 @@ def validate_currbudget():
             ask_curr()
         else:
             currency = SYMBOLS[budg[0]]
-            num_curr = [number for number, curr in CURRENCY.items() if curr == currency][0]
+            num_curr = [
+                number for number, curr in CURRENCY.items() if curr == currency
+            ][0]
             # budget = budg[1:]
             # print(f'used budget is {budget}')
             user_choice = retrieve_currbudget()
@@ -376,7 +379,7 @@ def ask_curr():
 def fetch_gsheet_exp():
     """
     Returns:
-        (list): all values of previously logged expenses. 
+        (list): all values of previously logged expenses.
     """
     all_v = user_gsheet.get_all_values()[2:]
     return all_v
@@ -392,10 +395,10 @@ def convert_gsheet_exp(old_curr, chosen_curr, exp):
 def append_gsheet_exp(v):
     """
     Args:
-        old_curr (int): The number of the currency that was previously logged in. Retrieved from Google Sheets from each expense. 
+        old_curr (int): The number of the currency that was previously logged in. Retrieved from Google Sheets from each expense.
 
     Returns:
-        (list): converted values of previously logged expenses.  
+        (list): converted values of previously logged expenses.
     """
     all_rows = []
     for expense in v:
@@ -403,7 +406,9 @@ def append_gsheet_exp(v):
         for value in expense:
             if value:
                 symbol = SYMBOLS[value[0]]
-                num_curr = [number for number, curr in CURRENCY.items() if curr == symbol][0]
+                num_curr = [
+                    number for number, curr in CURRENCY.items() if curr == symbol
+                ][0]
                 # In the case of 'GBP' where the value is '3,000'.
                 value = round(Decimal(value[1:].replace(",", "")), 2)
                 new_amount = convert_gsheet_exp(num_curr, user_currency, value)
@@ -425,10 +430,10 @@ def retrieve_rows():
 
 def update_currency_exps(new_rows):
     """
-    Updates the converted previously logged expenses. 
+    Updates the converted previously logged expenses.
 
-    Returns: 
-        None. 
+    Returns:
+        None.
     """
     v = fetch_gsheet_exp()
     print(v)
@@ -485,6 +490,7 @@ def append_remainder(remainder):
     """
     user_gsheet.update_acell("F1", remainder)
 
+
 def ask_budget():
     """
     Asks for budget and updates global budget variable.
@@ -540,11 +546,7 @@ def ask_category():
             continue
         elif validate_selection(cat, 6):
             exp = EXPENSES[int(cat)]
-            user_choice = confirm_input(exp)
-            if user_choice == "p":
-                ask_expense(exp)
-            elif user_choice == "c":
-                ask_category()
+            ask_expense(exp)
         return cat
 
 
@@ -568,7 +570,7 @@ def ask_expense(category):
             continue
         elif validate_num_selection(user_expense):
             form_expense = format_expenses(user_currency, user_expense)
-            user_choice = confirm_input(form_expense)
+            user_choice = confirm_input(form_expense, f' for "{category}".')
             if user_choice == "p":
                 print(" ✅  Thanks!\n ⌛  Updating your expense log...")
                 # Push the expense into the global user_expenses list.
@@ -581,7 +583,7 @@ def ask_expense(category):
                     create_expense(user_month, user_budget)
                     break
             elif user_choice == "c":
-                ask_expense(category)
+                ask_category()
             elif user_choice == "q":
                 exit_tag()
     return user_expense
@@ -705,7 +707,7 @@ def calculate_budget_remainder():
     # Get the total of the user's expenses.
     prev_exps = retrieve_rows()
     print(prev_exps)
-    total = sum(user_expenses.values()) 
+    total = sum(user_expenses.values())
     print(total)
     total = str(total)
     remainder = round(num_remainder - float(total), 2)
