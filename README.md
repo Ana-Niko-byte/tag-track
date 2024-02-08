@@ -1,7 +1,7 @@
 # Tag Track
 This app enables users to monitor their monthly spending through predefined budgets and provides a yearly 'overview' sheet for a comprehensive view. It offers various categories for users to systematically record their expenses (defined in _Structure_). Once expenses are logged, users can access a summary of their monthly spendings in a Google Sheets format.
 
-The application is available for viewing [here](https://tag-track-cc45575f1826.herokuapp.com/).
+The application is available for viewing [here](https://tag-track-revived-46181e706d13.herokuapp.com/).
 
 The Google Sheets for this application is available for use [here](https://docs.google.com/spreadsheets/d/1kGdwNqPvyRYIRL4LbEy-CgS1YDIHI6uKYHOG7gMbuB8/edit#gid=1925370965).
 
@@ -45,7 +45,6 @@ The structure of the 'Tag Track' application is as follows:
     - GBP
     - USD
     - AUD
-    - UAH
 - Total Monthly Budget input prompt with validation
     - Or budget retrieval system based on the user's month selection. 
 - _Press 'Enter' to Continue OR Type 'q' to quit..._

@@ -32,8 +32,8 @@ MONTHS = {
 }
 
 # Currency the user can select for logging an expense.
-CURRENCY = {1: "EUR", 2: "GBP", 3: "USD", 4: "AUD", 5: "UAH"}
-SYMBOLS = {"€": "EUR", "£": "GBP", "$": "USD", "$": "AUD", "₴": "UAH"}
+CURRENCY = {1: "EUR", 2: "GBP", 3: "USD", 4: "AUD"}
+SYMBOLS = {"€": ["EUR", 1], "£": ["GBP", 2], "$": ["USD", 3], "$": ["AUD", 4]}
 
 # Categories the user can select for logging an expense.
 EXPENSES = {
@@ -64,10 +64,10 @@ user_expenses = []
 
 def print_intro():
     """
-    Uses colorama styling library to print large green heading.
+    Prints intro heading with colorama styling library.
     """
     clear_terminal()
-    text = text2art("Tag - Tracker")
+    text = text2art("Tag - Track")
     print(Fore.LIGHTGREEN_EX + text + Fore.RESET)
 
 
@@ -98,9 +98,9 @@ def validate_string(string):
         bool: Valid string.
     """
     if not string:
-        print(" ❌  Please enter a value to begin.\n")
+        print("\n ❌  Please enter a value to begin.\n")
     elif not all(letter.isalpha() for letter in string.split()):
-        print(" ❌  Why you using digits, bro?\n")
+        print("\n ❌  Why you using digits, bro?\n")
     else:
         return True
 
@@ -111,19 +111,19 @@ def validate_num_selection(num):
         num (float): The number input to be validated.
 
     Returns:
-        (bool): Valid number.
+        bool: Valid number.
     """
     if not num:
-        print(" ❌  Please enter a value to begin.\n")
+        print("\n ❌  Please enter a value to begin.\n")
         return False
     try:
         if not all(float(digit) for digit in num.split()):
-            print(" ❌  Why you not using digits only, bro?\n")
+            print("\n ❌  Why you not using digits only, bro?\n")
             return False
         else:
             return float(num)
     except ValueError:
-        print(f" ❌  Invalid input. \n 👉  Please use digits only.")
+        print(f"\n ❌  Invalid input. \n 👉  Please use digits only.")
         return False
 
 
@@ -142,10 +142,8 @@ def validate_selection(selection, num_range, min_num_range=0):
         if float(selection) > min_num_range and float(selection) <= num_range:
             return True
         else:
-            print(
-                f""" ❌  Invalid input.
-                Please choose one of the {num_range} options provided."""
-            )
+            print("\n ❌  Invalid input.")
+            print(f"Please choose one of the {num_range} options provided.")
             return False
     else:
         return False
@@ -158,25 +156,21 @@ def confirm_input(user_input, additional="."):
         user_input (str): The letter to be validated.
 
     Returns:
-        (str): Valid user_input letter.
+        user_conf (str): Valid user_input letter.
     """
     while True:
-        user_conf = input(
-            f"""\n 👉  You've chosen {user_input}{additional}
-            Type 'p' to proceed, 'c' to change, or 'q' to quit: """
-        )
+        print(f"\n 👉  You've chosen {user_input}{additional}")
+        user_conf = input("Type 'p' to proceed, 'c' to change, or 'q' to quit: ")
         if not user_conf:
-            print(" ❌  Please enter a value to continue.\n")
+            print("\n ❌  Please enter a value to continue.\n")
         elif user_conf == "p" or user_conf == "c":
             break
         elif user_conf == "q":
             exit_tag()
             break
         else:
-            print(
-                f""" ❌  Invalid input.
-                \n 👉  Please choose either 'p', or 'c' to proceed."""
-            )
+            print("\n ❌  Invalid input.")
+            print(" 👉  Please choose either 'p', or 'c' to proceed.")
     return user_conf
 
 
@@ -211,7 +205,7 @@ def ask_name():
     If valid, calls for month selection from a provided list.
 
     Returns:
-        (str): User's name.
+        name (str): User's name.
     """
     while True:
         name = input("   ➤ Please tell me your name: ").strip()
@@ -223,98 +217,91 @@ def ask_name():
             break
     return name
 
-
 def ask_month():
     """
     Displays selection of month options in a table.
     If valid, calls for currency selection.
 
     Returns:
-        (str): Month as a string.
+        month_name (str): Month as a string.
     """
-    create_table(MONTHS, "Month")
     while True:
+        create_table(MONTHS, "Month")
         global user_month
         print("\n (💡  Type the 'No.' )")
-        month = input(" ➤  Please choose the month you want to log for: ")
-        user_month = month
+        month = input(" ➤  Please choose a month to log for: ")
         if validate_selection(month, 12):
+            user_month = month
             month_name = MONTHS[int(month)]
             user_choice = confirm_input(month_name)
             if user_choice == "p":
                 get_month_sheet(month_name)
-                validate_currbudget()
+                nextsteps_currbudget()
+                break
             elif user_choice == "c":
                 clear_terminal()
-                ask_month()
-            break
     return month_name
-
 
 def retrieve_currbudget():
     """
     Retrieves current budget value.
-    Asks user whether to use or change value.
+    Performs some basic validation.
 
     Returns:
-        (str): User input.
+        Either None, or budget (str).
     """
-    current = user_gsheet.acell("B1").value
-    if current:
-        clear_terminal()
-        print(
-            f"""\n ⚠️  Your budget for the month of
-            {MONTHS[int(user_month)]} is currently set to {current}.⚠️"""
-        )
-        print(
-            f"If you choose a new currency, all previously logged expenses for the month of {MONTHS[int(user_month)]} will be changed according to the current conversion rate."
-        )
-        user_budget_input = input(
-            """\n ➤  Would you like to use this (type 'u'),
-            or change it? (type 'c'): """
-        )
-        return user_budget_input
+    budget = user_gsheet.acell("B1").value
+    if budget is None:
+        ask_curr()
+        return None
+    else:
+        return budget
 
 
 def validate_currbudget():
+    """
+    Validates returned budget value.
+
+    Returns:
+        user_budget_input (str): User input.
+    """
+    budg = retrieve_currbudget()
+    if budg:
+        clear_terminal()
+        budg_month = MONTHS[int(user_month)]
+        print(f"\n ⚠️  Budget for {budg_month} is set to {budg}.⚠️")
+        print(f"Selecting a new currency will convert all logged expenses for {budg_month}")
+        while True:
+            user_budget_input = input("\n ➤  Type 'u' to use or 'c' to change:")
+            if user_budget_input == 'u':
+                print(f"✅  Budget for {budg_month}: {budg}")
+                break
+            elif user_budget_input == "c":
+                clear_terminal()
+                ask_curr()
+                break
+            else:
+                print(" ❌  Invalid input.")
+                print(" 👉  Please choose either 'u', or 'c' to proceed.")
+        return user_budget_input
+
+
+def nextsteps_currbudget():
     """
     Calls functions based on user procedure choice.
 
     Returns:
         None.
     """
-    while True:
-        budg = user_gsheet.acell("B1").value
-        if budg is None:
-            ask_curr()
-        else:
-            currency = SYMBOLS[budg[0]]
-            num_curr = [
-                number for number, curr in CURRENCY.items() if curr == currency
-            ][0]
-            # budget = budg[1:]
-            # print(f'used budget is {budget}')
-            user_choice = retrieve_currbudget()
-            if user_choice == "u":
-                global user_currency
-                global user_budget
-                user_currency = num_curr
-                user_budget = budg
-                print(
-                    f""" ✅  Budget for the month of {
-                        MONTHS[int(user_month)]}: {budg}"""
-                )
-                ask_category()
-                break
-            elif user_choice == "c":
-                ask_curr()
-                break
-            else:
-                print(
-                    f""" ❌  Invalid input.
-                        \n 👉  Please choose either 'u', or 'c' to proceed."""
-                )
-                continue
+    budg = retrieve_currbudget()
+    validation = validate_currbudget()
+    if validation == 'u':
+        num_curr = SYMBOLS[budg[0]][1]
+        global user_currency
+        global user_budget
+        user_currency = num_curr
+        user_budget = budg
+        ask_category()
 
 
 def get_month_sheet(month_needed):
@@ -331,19 +318,21 @@ def get_month_sheet(month_needed):
     global user_gsheet
     try:
         user_gsheet = SHEET.worksheet(month_needed)
-        print(
-            f""" ✅  Worksheet retrieved successfully!
-            \n ⌛  Hold on while we fetch the next table...\n"""
-        )
+        print("\n ✅  Worksheet retrieved successfully!")
+        print(" ⌛  Hold on while we fetch the next table...")
         clear_terminal()
     # Code from snyk.io
     except gspread.exceptions.WorksheetNotFound:
-        print(
-            """ ❌  We weren'nt able to retrieve your worksheet.
-            \n 👉  Please check your internet connection and try again"""
-        )
+        print("\n ❌  We weren'nt able to retrieve your worksheet.")
+        print(" 👉  Please check your internet connection and try again")
         exit_tag()
     return user_gsheet
+
+
+def print_curr_intro():
+    clear_terminal()
+    print(f"\n ✅  You have chosen {MONTHS[int(user_month)]}.")
+    create_table(CURRENCY, "Currency")
 
 
 def ask_curr():
@@ -354,26 +343,21 @@ def ask_curr():
     Returns:
         (num): Number corresponding currency in table.
     """
-    clear_terminal()
-    print(f"\n ✅  You have chosen {MONTHS[int(user_month)]}.")
-    create_table(CURRENCY, "Currency")
+    print_curr_intro()
     while True:
         print("\n (💡 Type the 'No.' ")
-        curr = input(" ➤  Please choose the currency you wish to log in: ")
-        if validate_selection(curr, 5):
+        curr = input(" ➤  Please choose your currency: ")
+        if validate_selection(curr, 4):
             global user_currency
             user_currency = curr
             str_curr = CURRENCY[int(curr)]
             user_choice = confirm_input(str_curr)
             if user_choice == "p":
                 clear_terminal()
-                print(f" ✅  You have chosen to log in '{str_curr}'")
+                print(f"\n ✅  Your chosen currency '{str_curr}'")
                 ask_budget()
                 break
-            elif user_choice == "c":
-                ask_curr()
-            break
-    return curr
+        return curr
 
 
 def fetch_gsheet_exp():
@@ -381,8 +365,7 @@ def fetch_gsheet_exp():
     Returns:
         (list): all values of previously logged expenses.
     """
-    all_v = user_gsheet.get_all_values()[2:]
-    return all_v
+    return user_gsheet.get_all_values()[2:]
 
 
 def convert_gsheet_exp(old_curr, chosen_curr, exp):
@@ -394,50 +377,46 @@ def convert_gsheet_exp(old_curr, chosen_curr, exp):
 
 def append_gsheet_exp(v):
     """
+    Appends to main array for uploading to GS.
     Args:
         old_curr (int): The number of the currency that was previously logged in. Retrieved from Google Sheets from each expense.
 
     Returns:
         (list): converted values of previously logged expenses.
     """
+    v = fetch_gsheet_exp()
     all_rows = []
     for expense in v:
         updates = []
         for value in expense:
-            if value:
-                symbol = SYMBOLS[value[0]]
-                num_curr = [
-                    number for number, curr in CURRENCY.items() if curr == symbol
-                ][0]
-                # In the case of 'GBP' where the value is '3,000'.
-                value = round(Decimal(value[1:].replace(",", "")), 2)
-                new_amount = convert_gsheet_exp(num_curr, user_currency, value)
-                # Get rid of 'Decimal' class through float conversion.
-                dec_amount = float(round((new_amount), 2))
-                form_amount = format_expenses(user_currency, dec_amount)
-                updates.append(form_amount)
-            else:
-                updates.append(value)
-                continue
+            validate_value(value, updates)
         all_rows.append(updates)
-    return all_rows
+    update_currency_exps(v, all_rows)
+
+def validate_value(value, updates):
+    """
+    Chooses which value to append to secondary list.
+    """
+    if value:
+        num_curr = SYMBOLS[value[0]][1]
+        # In the case of 'GBP' where the value is '3,000'.
+        value = round(Decimal(value[1:].replace(",", "")), 2)
+        new_amount = convert_gsheet_exp(num_curr, user_currency, value)
+        # Get rid of 'Decimal' class through float conversion.
+        dec_amount = float(round((new_amount), 2))
+        form_amount = format_expenses(user_currency, dec_amount)
+        updates.append(form_amount)
+    else:
+        updates.append(value)
 
 
-def retrieve_rows():
-    values = fetch_gsheet_exp()
-    return append_gsheet_exp(values)
-
-
-def update_currency_exps(new_rows):
+def update_currency_exps(v, new_rows):
     """
     Updates the converted previously logged expenses.
 
     Returns:
         None.
     """
-    v = fetch_gsheet_exp()
-    print(v)
-    new_rows = append_gsheet_exp(v)
     row_amount = len(v)
     for i in range(3, row_amount + 3):
         clear_range = [f"A{i}:F{i}"]
@@ -503,7 +482,7 @@ def ask_budget():
         global user_budget
         clear_terminal()
         budget = input(
-            f"\n   ➤  Please enter your budget for {MONTHS[int(user_month)]}: "
+            f"\n   ➤  Please enter a budget for {MONTHS[int(user_month)]}: "
         )
         if budget == "":
             print(" ❌  Please enter your budget to continue.")
@@ -515,16 +494,14 @@ def ask_budget():
             user_choice = confirm_input(formatted_budget)
             if user_choice == "p":
                 clear_terminal()
-                print(
-                    f""" ✅  Budget for the month of {
-                        MONTHS[int(user_month)]}: {formatted_budget}"""
-                )
+                print(f" ✅  Budget for {MONTHS[int(user_month)]}: {formatted_budget}")
                 # Update the global variable with the format.
                 user_budget = formatted_budget
                 ask_category()
                 return user_budget
             elif user_choice == "c":
                 ask_budget()
+                break
 
 
 def ask_category():
@@ -703,11 +680,13 @@ def calculate_budget_remainder():
     if pre_rem is None:
         num_remainder = float(user_budget[1:].replace(",", ""))
     elif pre_rem:
-        num_remainder = float(pre_rem[1:].replace(",", ""))
+        if pre_rem[0] == '-':
+            num_remainder = float(pre_rem.replace(",", "").replace(pre_rem[1], ""))
+            total = sum(user_expenses.values()) * -1
+        else:
+            num_remainder = float(pre_rem[1:].replace(",", ""))
+            total = sum(user_expenses.values())
     # Get the total of the user's expenses.
-    prev_exps = retrieve_rows()
-    print(prev_exps)
-    total = sum(user_expenses.values())
     print(total)
     total = str(total)
     remainder = round(num_remainder - float(total), 2)
