@@ -341,7 +341,7 @@ def ask_curr():
     If valid, checks in.
 
     Returns:
-        (num): Number corresponding currency in table.
+        curr (num): Number corresponding to currency in table.
     """
     print_curr_intro()
     while True:
@@ -369,6 +369,17 @@ def fetch_gsheet_exp():
 
 
 def convert_gsheet_exp(old_curr, chosen_curr, exp):
+    """
+    Converts expense currency.
+
+    Args:
+        old_curr (num): number of original currency from table.
+        chosen_curr (num): number of new currency from table.
+        exp (num): expense to be converted.
+
+    Returns:
+        new_amount (num): the converted expense.
+    """
     # Code from forex-python documentation.
     c = CurrencyRates()
     new_amount = c.convert(CURRENCY[int(old_curr)], CURRENCY[int(chosen_curr)], exp)
@@ -379,10 +390,10 @@ def append_gsheet_exp(v):
     """
     Appends to main array for uploading to GS.
     Args:
-        old_curr (int): The number of the currency that was previously logged in. Retrieved from Google Sheets from each expense.
+        v (list): Expenses retrieved from GS.
 
     Returns:
-        (list): converted values of previously logged expenses.
+        all_rows (list): Converted values of previously logged expenses.
     """
     v = fetch_gsheet_exp()
     all_rows = []
@@ -414,6 +425,10 @@ def update_currency_exps(v, new_rows):
     """
     Updates the converted previously logged expenses.
 
+    Args:
+        v (list): values retrieved from GS.
+        new_rows (list): values to be uploaded to GS.
+
     Returns:
         None.
     """
@@ -434,7 +449,7 @@ def format_expenses(curr, expense):
         expense (num): Value of expense.
 
     Returns:
-        (str): Formatted Expense.
+        formatted_expense (str): Formatted Expense.
     """
     # Code taken from Currency example on pypi.org
     currency = Currency(CURRENCY[int(curr)])
@@ -452,9 +467,7 @@ def append_budget(budget):
     Returns:
         None.
     """
-    sheet = user_gsheet
-    # This will change any previously logged budget in the 'B1' cell.
-    sheet.update_acell("B1", budget)
+    user_gsheet.update_acell("B1", budget)
 
 
 def append_remainder(remainder):
@@ -476,33 +489,37 @@ def ask_budget():
     If valid, calls for category selection.
 
     Returns:
-        (str): Currency Symbol + Value of budget.
+        None.
     """
+    clear_terminal()
     while True:
-        global user_budget
-        clear_terminal()
-        budget = input(
-            f"\n   ➤  Please enter a budget for {MONTHS[int(user_month)]}: "
-        )
-        if budget == "":
-            print(" ❌  Please enter your budget to continue.")
-            continue
-        elif validate_num_selection(budget):
-            global user_currency
-            # Format the budget output to the user in their chosen currency.
-            formatted_budget = format_expenses(user_currency, budget)
-            user_choice = confirm_input(formatted_budget)
-            if user_choice == "p":
-                clear_terminal()
-                print(f" ✅  Budget for {MONTHS[int(user_month)]}: {formatted_budget}")
-                # Update the global variable with the format.
-                user_budget = formatted_budget
-                ask_category()
-                return user_budget
-            elif user_choice == "c":
-                ask_budget()
-                break
+        budg_month = MONTHS[int(user_month)]
+        budget = input(f"\n   ➤  Please enter a budget for {budg_month}: ")
+        if validate_num_selection(budget):
+            nextsteps_budget(budget, budg_month)
+            break
 
+def nextsteps_budget(budget_entry, month):
+    """
+    Executes nextsteps following buget validation.
+
+    Args:
+        budget_entry (num): value of budget.
+        month (str): budget month.
+
+    Returns:
+        None.
+    """
+    # Format the budget output to the user in their chosen currency.
+    formatted_budget = format_expenses(user_currency, budget_entry)
+    user_choice = confirm_input(formatted_budget)
+    if user_choice == "p":
+        clear_terminal()
+        print(f" ✅  Budget for {month}: {formatted_budget}")
+        # Update the global variable with the format.
+        global user_budget
+        user_budget = formatted_budget
+        ask_category()
 
 def ask_category():
     """
@@ -510,20 +527,15 @@ def ask_category():
     If valid, calls for expense value.
 
     Returns:
-        (num): Number corresponding to category.
+        cat (num): Number corresponding to category.
     """
+    clear_terminal()
     create_table(EXPENSES, "Expense Category")
     while True:
         print("\n (💡  Type the 'No.' )")
         cat = input(" ➤  Please choose a category: ")
-        if cat == "":
-            print(" ❌  Please choose a category to log an expense.")
-            continue
-        elif validate_selection(cat, 6) is False:
-            continue
-        elif validate_selection(cat, 6):
-            exp = EXPENSES[int(cat)]
-            ask_expense(exp)
+        if validate_selection(cat, 6):
+            ask_expense(EXPENSES[int(cat)])
         return cat
 
 
@@ -533,37 +545,29 @@ def ask_expense(category):
     If valid, calls expense loop.
 
     Args:
-        category (str): Category to log expense in.
+        category (str): Expense category.
 
     Returns:
-        (num): Expense value in category.
+        None.
     """
     while True:
         expense_msg = f"   ➤ Please enter the amount you spent on {category}: "
-        user_expense = input(expense_msg)
-        global user_expenses
-        if user_expense == "":
-            print(f" ❌  Please enter your expenses for {category}")
-            continue
-        elif validate_num_selection(user_expense):
-            form_expense = format_expenses(user_currency, user_expense)
+        user_exp = input(expense_msg)
+        if validate_num_selection(user_exp):
+            form_expense = format_expenses(user_currency, user_exp)
             user_choice = confirm_input(form_expense, f' for "{category}".')
             if user_choice == "p":
-                print(" ✅  Thanks!\n ⌛  Updating your expense log...")
-                # Push the expense into the global user_expenses list.
-                user_expenses.append([category, user_expense])
+                print(" ✅  Saved!\n ⌛  Updating your expense log...")
+                global user_expenses
+                user_expenses.append([category, user_exp])
                 if continue_expenses():
-                    clear_terminal()
-                    return ask_category()
+                    ask_category()
                 else:
                     clear_terminal()
                     create_expense(user_month, user_budget)
                     break
             elif user_choice == "c":
                 ask_category()
-            elif user_choice == "q":
-                exit_tag()
-    return user_expense
 
 
 def continue_expenses():
@@ -574,9 +578,7 @@ def continue_expenses():
         (bool): Another expense or continue.
     """
     while True:
-        user_answer = input(
-            "\n➤  Please type 'a' to add another expense, or 'c' to continue."
-        )
+        user_answer = input("\n➤  Type 'a' to add an expense, or 'c' to continue.")
         if user_answer == "a":
             return True
         elif user_answer == "c":
@@ -584,38 +586,34 @@ def continue_expenses():
             print("\n ⌛  Printing your expense log...")
             return False
         else:
-            print(f" ❌  Invalid input: {user_answer}. Please try again.")
+            print(f" ❌  Invalid input: {user_answer}.\nPlease try again.")
 
 
 def check_list():
     """
-    Checks the user's logged expenses list for duplicate categories.
+    Checks expenses list for duplicate categories.
     If found, merges categories and adds values.
 
     Returns:
-        (dict): Non-duplicated expenses.
+        non_duplicates (dict): Non-duplicated expenses.
     """
-    # Gets the logged expenses - may contain duplicates.
+    # May contain duplicates.
     global user_expenses
     non_duplicates = {}
     for item in user_expenses:
         cat, value = item
         value = round(float(value), 2)
-        # Checks if the category (key) is already in the duplicates dictionary.
         if cat in non_duplicates:
-            # If it is, it adds the values together.
             non_duplicates[cat] += value
         else:
-            # Adds the key and value to the dictionary.
             non_duplicates[cat] = value
-    # Re-assign the global variable the value of duplicates.
     user_expenses = non_duplicates
     return non_duplicates
 
 
 def create_expense(month, budget, colour="light_green"):
     """
-    Prints conclusive user table with budget + expenses.
+    Creates conclusive user table with budget + expenses.
 
     Args:
         month (num): Num corresponding to Month selection.
@@ -625,29 +623,24 @@ def create_expense(month, budget, colour="light_green"):
     Returns:
         None.
     """
-    # Assign PrettyTable object to month_table.
     table = PrettyTable()
-    # Assign headings and colours to the table.
     table.field_names = [
         colored(f"Expenses for {MONTHS[int(month)]}", colour),
         colored(f"{MONTHS[int(month)]}'s budget: {budget}", colour),
     ]
     # So the table doesn't display duplicate categories.
-    validated_cat_expenses = check_list()
-    for list_category, list_expense in validated_cat_expenses.items():
-        formatted_exp = format_expenses(user_currency, round(list_expense, 2))
+    valid_cat_exp = check_list()
+    for list_cat, list_exp in valid_cat_exp.items():
+        f_exp = format_expenses(user_currency, round(list_exp, 2))
         table.add_row(
-            [colored(list_category, "white"), colored(formatted_exp, "white")]
+            [colored(list_cat, "white"), colored(f_exp, "white")]
         )
         table.align = "l"
 
     remainder = calculate_budget_remainder()
-    print(remainder)
-    # Add separating rows to the table to differentiate final data.
     table.add_row(["-----------------------", "-----------------------"])
     # Check if budget is '-' or '+' to determine colour of final table row.
     if float(remainder[1:]) < 0:
-        print(remainder)
         table.add_row(
             [
                 colored("Your remaining budget:", "red"),
@@ -661,39 +654,51 @@ def create_expense(month, budget, colour="light_green"):
                 colored(user_budget_remainder, "green"),
             ]
         )
+    nextsteps_expense_table(table)
+
+
+def nextsteps_expense_table(conc_table):
+    """
+    Prints the conclusive expense table.
+    Asks whether to upload to GS or exit.
+
+    Args:
+        conc_table (str): Expense table.
+
+    Returns:
+    None
+    """
     clear_terminal()
-    print(f"\n{table}")
+    print(f"\n{conc_table}")
     ask_update()
 
 
 def retrieve_remainder_value():
+    """
+    Returns:
+        (str): Current budget remainder from GS. 
+    """
     return user_gsheet.acell("F1").value
-
 
 def calculate_budget_remainder():
     """
     Returns:
-        (str): Remainder of budget after expense(s) deduction.
+        user_budget_remainder (str): Budget remainder post expense(s) deduction.
     """
     # Get the unformatted version of remainder budget.
-    pre_rem = retrieve_remainder_value()
-    if pre_rem is None:
+    prelim_rem = retrieve_remainder_value()
+    if prelim_rem is None:
         num_remainder = float(user_budget[1:].replace(",", ""))
-    elif pre_rem:
-        if pre_rem[0] == '-':
-            num_remainder = float(pre_rem.replace(",", "").replace(pre_rem[1], ""))
-            total = sum(user_expenses.values()) * -1
-        else:
-            num_remainder = float(pre_rem[1:].replace(",", ""))
-            total = sum(user_expenses.values())
-    # Get the total of the user's expenses.
-    print(total)
-    total = str(total)
+    elif str(prelim_rem[0]) == '-':
+        num_remainder = -float(prelim_rem.replace(",", ""))
+    else:
+        num_remainder = float(prelim_rem[1:].replace(",", ""))
+    total = sum(user_expenses.values())
     remainder = round(num_remainder - float(total), 2)
-    # Update the global variable for the remainder.
     global user_budget_remainder
     user_budget_remainder = format_expenses(user_currency, remainder)
     return user_budget_remainder
+
 
 
 def ask_update():
@@ -704,16 +709,7 @@ def ask_update():
         None.
     """
     while True:
-        print("\nWould you like to upload your expenses to Google Sheets?\n")
-        print(
-            """ ⚠️  Note: You will need to manually remove your expenses
-            from your Month sheet and deduct from your
-            Overview sheet if you reconsider. ⚠️"""
-        )
-        user_update = input(
-            """\n   ➤ Please type 'u' to upload your
-            expenses to Google sheets, or 'q' to exit tag-track: """
-        )
+        user_update = input("\n   ➤ Type 'u' to upload your expenses, or 'q' to exit: ")
         if user_update == "u":
             update_worksheet()
             break
@@ -721,17 +717,14 @@ def ask_update():
             exit_tag()
             break
         else:
-            print(
-                f""" ❌  Invalid input. You entered '{user_update}'.
-            Please try again."""
-            )
-            continue
+            print(" ❌  Invalid input.")
+            print(f"You entered '{user_update}'. Please try again.")
 
 
 def format_data():
     """
     Returns:
-        (array): sorted user expenses.
+        format (list): sorted user expenses with currency symbol.
     """
     format = {
         "Rent": "",
@@ -748,34 +741,39 @@ def format_data():
     return format
 
 
+def retrieve_overview():
+    """
+    Returns:
+        Overview sheet from Google Sheets.
+    """
+    return SHEET.worksheet("Overview")
+
+
 def expensive_battleships():
     """
     Adds two parameters to create a cell format, e.g. 'C3'.
 
     Returns:
-        (array): cells to be updated.
+        cells (list): cells to be updated.
     """
-    sheet = SHEET.worksheet("Overview")
+    OV_SHEET = retrieve_overview()
     global user_month
-    # List user_expenses changed to dict in check_list().
     global user_expenses
 
-    # Num input for month.
-    # + 1 is added to get the next cell after headers.
+    # Num input for month, + 1 added for cells after headers.
     battleship_two = int(user_month) + 1
     used_keys = list(user_expenses.keys())
-    column_indexes = []
 
+    column_indexes = []
     for key in used_keys:
-        cell = sheet.find(key)
-        # Index of column in spreadsheet.
+        cell = OV_SHEET.find(key)
+        # Index of column.
         cell_column = cell.col
         lettered_column = num_lett(cell_column)
         column_indexes.append(lettered_column)
 
     cells = []
-    for letter in column_indexes:
-        battleship_one = letter
+    for battleship_one in column_indexes:
         cell = battleship_one + str(battleship_two)
         cells.append(cell)
     return cells
@@ -792,11 +790,10 @@ def num_lett(num):
         (str): Letter.
     """
     if 1 <= num <= 7:
-        # chr(65) = A
         return chr(num + 64)
 
 
-def update_cell_values():
+def update_OV_cell_values():
     """
     Updates "Overview" sheet with values.
 
@@ -805,26 +802,21 @@ def update_cell_values():
     """
     cells_to_update = expensive_battleships()
     user_logs = list(user_expenses.values())
-    OVERVIEW = SHEET.worksheet("Overview")
+    OV = retrieve_overview()
     for i, cell in enumerate(cells_to_update):
         if i < len(user_logs):
             initial_log = user_logs[i]
-            cell_value = OVERVIEW.acell(cell).value
+            cell_value = OV.acell(cell).value
             if cell_value is None:
                 cell_value = 0
-                addition = initial_log
+                addition = format_expenses(user_currency, initial_log)
             else:
                 addition = float(cell_value) + float(initial_log)
-            OVERVIEW.update_acell(cell, addition)
+                addition = format_expenses(user_currency, addition)
+            OV.update_acell(cell, addition)
     append_remainder(user_budget_remainder)
-    print(
-        f"""\n ✅  We've successfully updated your
-    Month sheet and annual Overview sheet!"""
-    )
-    print(
-        """Tip: Make sure to check this sheet regularly
-    to stay on top of your spending habits :)\n"""
-    )
+    print("\n ✅  We've successfully updated your Month sheet!")
+    print("Check your Overview sheet to view your entire expense history.")
 
 
 def update_worksheet():
@@ -834,14 +826,14 @@ def update_worksheet():
     Returns:
         None.
     """
-    print("   ⌛  Updating your worksheet...")
+    print("⌛  Updating your worksheet...")
     values = fetch_gsheet_exp()
     append_gsheet_exp(values)
     expenses = format_data()
     values_to_append = list(expenses.values())
     append_budget(user_budget)
     user_gsheet.append_row(values_to_append)
-    update_cell_values()
+    update_OV_cell_values()
 
 
 def main():
