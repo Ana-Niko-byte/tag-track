@@ -54,13 +54,26 @@ SHEET = GSPREAD_CLIENT.open("Tag-Track")
 # These are used in user-feedback throughout the application.
 COLUMNS = []
 
-user_month = None
+def create_user_month():
+    """Getter & Setter functions for int value of month"""
+    user_month = None
+
+    """Retrieves user_month on call"""
+    def retrieve_month():
+        return user_month
+    
+    """Updates user_month with int argument"""
+    def update_month(set_month:int):
+        nonlocal user_month
+        user_month = set_month
+    
+    return retrieve_month, update_month
+
 user_gsheet = None
 user_budget = None
 user_budget_remainder = None
 user_currency = None
 user_expenses = []
-
 
 def print_intro():
     """
@@ -183,7 +196,7 @@ def confirm_input(user_input, additional="."):
     return user_conf
 
 
-def create_table(value, heading, colour="light_green"):
+def create_table(value, heading:str, colour="light_green"):
     """
     Prints a table using predefined tuple values.
     Args:
@@ -346,7 +359,7 @@ def num_lett(num):
 
 
 # _________ End of shared functionalities.
-
+retrieve_month, update_month = create_user_month()
 
 def ask_name():
     """
@@ -377,11 +390,10 @@ def ask_month():
     """
     while True:
         create_table(MONTHS, "Month")
-        global user_month
         print("\n (💡  Type the 'No.' )")
         month = input(" ➤  Please choose a month to log for: ")
         if validate_selection(month, 12):
-            user_month = month
+            update_month(month)
             month_name = MONTHS[int(month)]
             user_choice = confirm_input(month_name)
             if user_choice == "p":
@@ -390,7 +402,7 @@ def ask_month():
                 break
             elif user_choice == "c":
                 clear_terminal()
-    return month_name
+        return month_name
 
 
 def get_month_sheet(month_needed):
@@ -430,7 +442,8 @@ def validate_currbudget(budg):
     """
     if budg:
         clear_terminal()
-        budg_month = MONTHS[int(user_month)]
+        month = retrieve_month()
+        budg_month = MONTHS[int(month)]
         print(f"\n ⚠️  Budget for {budg_month} is set to {budg}.⚠️")
         print(
             f"Selecting a new currency will convert all {budg_month} expenses."
@@ -483,7 +496,8 @@ def ask_budget():
     """
     clear_terminal()
     while True:
-        budg_month = MONTHS[int(user_month)]
+        month = retrieve_month()
+        budg_month = MONTHS[int(month)]
         budget = input(f"\n   ➤  Please enter a budget for {budg_month}: ")
         if validate_num_selection(budget):
             global user_budget
@@ -517,7 +531,9 @@ def nextsteps_budget(budget_entry, month):
 
 def print_curr_intro():
     clear_terminal()
-    print(f"\n ✅  You have chosen {MONTHS[int(user_month)]}.")
+    month = retrieve_month()
+    budg_month = MONTHS[int(month)]
+    print(f"\n ✅  You have chosen {budg_month}.")
     create_table(CURRENCY, "Currency")
 
 
@@ -665,7 +681,8 @@ def continue_expenses():
         elif user_answer == "c":
             clear_terminal()
             print("\n ⌛  Calculating your expenses...")
-            create_expense(user_month, user_budget)
+            month = retrieve_month()
+            create_expense(month, user_budget)
             break
         else:
             print(f" ❌  Invalid input: {user_answer}.\nPlease try again.")
@@ -684,7 +701,7 @@ def check_list():
     non_duplicates = {}
     for item in user_expenses:
         cat, value = item
-        value = round(float(value), 2)
+        value = round(float(Decimal(value)), 2)
         if cat in non_duplicates:
             non_duplicates[cat] += value
         else:
@@ -707,9 +724,11 @@ def create_expense(month, budget, colour="light_green"):
     """
     table = PrettyTable()
     budget = format_expenses(user_currency, budget)
+    month = retrieve_month()
+    budg_month = MONTHS[int(month)]
     table.field_names = [
-        colored(f"Expenses for {MONTHS[int(month)]}", colour),
-        colored(f"{MONTHS[int(month)]}'s budget: {budget}", colour),
+        colored(f"Expenses for {budg_month}", colour),
+        colored(f"{budg_month}'s budget: {budget}", colour),
     ]
     # So the table doesn't display duplicate categories.
     valid_cat_exp = check_list()
@@ -867,7 +886,8 @@ def expensive_battleships():
     global user_expenses
 
     # Num input for month, + 1 added for cells after headers.
-    battleship_two = int(user_month) + 1
+    month = retrieve_month()
+    battleship_two = int(month) + 1
     used_keys = list(user_expenses.keys())
 
     column_indexes = []
