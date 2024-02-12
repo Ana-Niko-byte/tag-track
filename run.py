@@ -54,20 +54,24 @@ SHEET = GSPREAD_CLIENT.open("Tag-Track")
 # These are used in user-feedback throughout the application.
 COLUMNS = []
 
+
 def create_user_month():
     """Getter & Setter functions for int value of month"""
     user_month = None
 
     """Retrieves user_month on call"""
+
     def retrieve_month():
         return user_month
-    
+
     """Updates user_month with int argument"""
-    def update_month(set_month:int):
+
+    def update_month(set_month: float):
         nonlocal user_month
         user_month = set_month
-    
+
     return retrieve_month, update_month
+
 
 user_gsheet = None
 user_budget = None
@@ -75,10 +79,9 @@ user_budget_remainder = None
 user_currency = None
 user_expenses = []
 
+
 def print_intro():
-    """
-    Prints intro heading with colorama styling library.
-    """
+    """Prints intro heading with colorama styling library."""
     clear_terminal()
     text = text2art("Tag - Track")
     print(Fore.LIGHTGREEN_EX + text + Fore.RESET)
@@ -91,9 +94,7 @@ def exit_tag():
 
 
 def clear_terminal():
-    """
-    Clears the terminal screen for improved UX based on os.
-    """
+    """Clears the terminal screen for improved UX based on os."""
     # For windows os.
     if os.name == "nt":
         os.system("cls")
@@ -102,14 +103,11 @@ def clear_terminal():
         os.system("clear")
 
 
-def validate_string(string):
-    """
-    Args:
-        string (str): The string input to be validated.
-
+def validate_string(string: any):
+    """Args:
+        string (any): The string input to be validated.
     Returns:
-        bool: Valid string.
-    """
+        bool: Valid string."""
     if not string:
         print("\n ❌  Please enter a value to begin.\n")
         return False
@@ -120,14 +118,11 @@ def validate_string(string):
         return True
 
 
-def validate_num_selection(num):
-    """
-    Args:
-        num (float): The number input to be validated.
-
+def validate_num_selection(num: any):
+    """Args:
+        num (any): The number input to be validated.
     Returns:
-        bool: Valid number.
-    """
+        bool: Valid number."""
     if not num:
         clear_terminal()
         print("\n ❌  Please enter a value to begin.\n")
@@ -146,17 +141,14 @@ def validate_num_selection(num):
         return False
 
 
-def validate_selection(selection, num_range, min_num_range=0):
-    """
-    Validates using validate_num_selection() for number validation.
+def validate_selection(selection: float, num_range: int, min_num_range=0):
+    """Validates using validate_num_selection() for number validation.
     Args:
         selection (float): The user selection to be validated.
         num_range (num): The maximum number that can be selected.
         min_num_range (num): The default starting range point.
-
     Returns:
-        bool: Valid selection (from selected choice of options).
-    """
+        bool: Valid selection (from selected choice of options)."""
     if validate_num_selection(selection):
         if float(selection) > min_num_range and float(selection) <= num_range:
             return True
@@ -169,20 +161,16 @@ def validate_selection(selection, num_range, min_num_range=0):
         return False
 
 
-def confirm_input(user_input, additional="."):
-    """
-    If correct, proceeds to next step. If not, loops back to function.
+def confirm_input(user_input: any, additional="."):
+    """If correct, proceeds to next step. If not, loops back to function.
     Args:
         user_input (str): The letter to be validated.
-
     Returns:
-        user_conf (str): Valid user_input letter.
-    """
+        user_conf (str): Valid user_input letter."""
     while True:
         print(f"\n 👉  You've chosen {user_input}{additional}")
         user_conf = input(
-            "Type 'p' to proceed, 'c' to change, or 'q' to quit: "
-            )
+            "Type 'p' to proceed, 'c' to change, or 'q' to quit: ")
         if not user_conf:
             print("\n ❌  Please enter a value to continue.\n")
         elif user_conf == "p" or user_conf == "c":
@@ -196,17 +184,14 @@ def confirm_input(user_input, additional="."):
     return user_conf
 
 
-def create_table(value, heading:str, colour="light_green"):
-    """
-    Prints a table using predefined tuple values.
+def create_table(value, heading: str, colour="light_green"):
+    """Prints a table using predefined tuple values.
     Args:
         value (tuple): The string to be iterated for row values.
         heading (str): String to be displayed in second column.
         colour (str): Has a default value of "light_green".
-
     Returns:
-        None.
-    """
+        None."""
     table = PrettyTable()
     table.field_names = [colored("No.", colour), colored(heading, colour)]
     for num, parameter in value.items():
@@ -216,73 +201,54 @@ def create_table(value, heading:str, colour="light_green"):
 
 
 def fetch_gsheet_exp():
-    """
-    Returns:
-        (list): all values of previously logged expenses.
-    """
+    """Returns:
+        (list): all values of previously logged expenses."""
     return user_gsheet.get_all_values()[2:]
 
 
 def append_budget():
-    """
-    Updates B1 cell with user's budget value.
-
+    """Updates B1 cell with user's budget value.
     Args:
         budget (str): Value to be uploaded.
-
     Returns:
-        None.
-    """
+        None."""
     user_budget_format = format_expenses(user_currency, user_budget)
     user_gsheet.update_acell("B1", user_budget_format)
 
 
 def append_remainder():
-    """
-    Updates F1 cell with user's remaining budget value.
-
+    """Updates F1 cell with user's remaining budget value.
     Args:
         remainder (str): Value to be uploaded.
-
     Returns:
-        None.
-    """
+        None."""
     user_rem_format = format_expenses(user_currency, user_budget_remainder)
     user_gsheet.update_acell("F1", user_rem_format)
 
 
 def retrieve_overview():
-    """
-    Returns:
-        Overview sheet from Google Sheets.
-    """
+    """Returns:
+        Overview sheet from Google Sheets."""
     return SHEET.worksheet("Overview")
 
 
 def retrieve_remainder_value():
-    """
-    Returns:
-        (str): Current budget remainder from GS.
-    """
+    """Returns:
+        (str): Current budget remainder from GS."""
     return user_gsheet.acell("F1").value
 
 
 def retrieve_currbudget():
-    """
-    Retrieves current budget value.
-    Performs some basic validation.
-
+    """Retrieves current budget value. Performs some basic validation.
     Returns:
-        Either None, or budget (str).
-    """
+        Either None, or budget (str)."""
     return user_gsheet.acell("B1").value
 
 
-def remove_formatting(exp_value):
+def remove_formatting(exp_value: str):
     if exp_value is None:
         num_only = float(user_budget[1:].replace(",", ""))
     elif exp_value:
-        exp_value = str(exp_value)
         neg_pos = exp_value[0]
         if neg_pos == "-":
             symbol = exp_value[1]
@@ -292,11 +258,11 @@ def remove_formatting(exp_value):
     return num_only
 
 
-def retrieve_value_currency(exp_value):
+def retrieve_value_currency(exp_value: str):
     if exp_value is None:
         symbol = float(user_budget[1:].replace(",", ""))
         curr = user_currency
-    elif str(exp_value)[0] == "-":
+    elif exp_value[0] == "-":
         symbol = str(exp_value)[1]
         curr = SYMBOLS[symbol][1]
     else:
@@ -305,55 +271,42 @@ def retrieve_value_currency(exp_value):
     return curr
 
 
-def format_expenses(curr, expense):
-    """
-    Formats the user's expenses with the chosen currency symbol.
-
+def format_expenses(curr: int, expense: float):
+    """Formats the user's expenses with the chosen currency symbol.
     Args:
         curr (num): Number corresponding currency in table.
         expense (num): Value of expense.
-
     Returns:
-        formatted_expense (str): Formatted Expense.
-    """
+        formatted_expense (str): Formatted Expense."""
     # Code taken from Currency example on pypi.org
     currency = Currency(CURRENCY[int(curr)])
     formatted_expense = currency.get_money_format(expense)
     return formatted_expense
 
 
-def convert_gsheet_exp(old_curr, chosen_curr, exp):
-    """
-    Converts expense currency.
-
+def convert_gsheet_exp(old_curr: int, chosen_curr: int, exp: float):
+    """Converts expense currency.
     Args:
-        old_curr (num): number of original currency from table.
-        chosen_curr (num): number of new currency from table.
-        exp (num): expense to be converted.
-
+        old_curr (int): number of original currency from table.
+        chosen_curr (int): number of new currency from table.
+        exp (float): expense to be converted.
     Returns:
-        new_amount (num): the converted expense.
-    """
+        new_amount (int): the converted expense."""
     # Code from forex-python documentation.
     c = CurrencyRates()
     new_amount = c.convert(
         CURRENCY[int(old_curr)],
         CURRENCY[int(chosen_curr)],
-        exp
-        )
+        exp)
     return new_amount
 
 
-def num_lett(num):
-    """
-    Converts ASCII code to character using built-in chr function.
-
+def num_lett(num: int):
+    """Converts ASCII code to character using built-in chr function.
     Args:
-        num (num): Value to be converted to string.
-
+        num (int): Value to be converted to string.
     Returns:
-        (str): Letter.
-    """
+        (str): Letter."""
     if 1 <= num <= 7:
         return chr(num + 64)
 
@@ -361,14 +314,12 @@ def num_lett(num):
 # _________ End of shared functionalities.
 retrieve_month, update_month = create_user_month()
 
-def ask_name():
-    """
-    A loop asking for user name.
-    If valid, calls for month selection from a provided list.
 
+def ask_name():
+    """A loop asking for user name.
+    If valid, calls for month selection from a provided list.
     Returns:
-        name (str): User's name.
-    """
+        name (str): User's name."""
     while True:
         name = input("   ➤ Please tell me your name: ").strip()
         if validate_string(name):
@@ -381,13 +332,10 @@ def ask_name():
 
 
 def ask_month():
-    """
-    Displays selection of month options in a table.
+    """Displays selection of month options in a table.
     If valid, calls for currency selection.
-
     Returns:
-        month_name (str): Month as a string.
-    """
+        month_name (str): Month as a string."""
     while True:
         create_table(MONTHS, "Month")
         print("\n (💡  Type the 'No.' )")
@@ -399,22 +347,17 @@ def ask_month():
             if user_choice == "p":
                 get_month_sheet(month_name)
                 nextsteps_currbudget()
-                break
+                return month_name
             elif user_choice == "c":
                 clear_terminal()
-        return month_name
 
 
-def get_month_sheet(month_needed):
-    """
-    Fetches the specified month worksheet.
-
+def get_month_sheet(month_needed: str):
+    """Fetches the specified month worksheet.
     Args:
         month_needed (str): Name of the specified month.
-
     Returns:
-        Gsheet for specified month.
-    """
+        Gsheet for specified month."""
     print(f"Fetching the '{month_needed}' worksheet...\n")
     global user_gsheet
     try:
@@ -434,20 +377,15 @@ def get_month_sheet(month_needed):
 
 
 def validate_currbudget(budg):
-    """
-    Validates returned budget value.
-
+    """Validates returned budget value.
     Returns:
-        user_budget_input (str): User input.
-    """
+        user_budget_input (str): User input."""
     if budg:
         clear_terminal()
         month = retrieve_month()
         budg_month = MONTHS[int(month)]
         print(f"\n ⚠️  Budget for {budg_month} is set to {budg}.⚠️")
-        print(
-            f"Selecting a new currency will convert all {budg_month} expenses."
-            )
+        print(f"A new currency will convert all {budg_month} expenses.")
         while True:
             user_budget_input = input(
                 "\n ➤  Type 'u' to use existing or 'c' to change: "
@@ -468,12 +406,9 @@ def validate_currbudget(budg):
 
 
 def nextsteps_currbudget():
-    """
-    Calls functions based on user procedure choice.
-
+    """Calls functions based on user procedure choice.
     Returns:
-        None.
-    """
+        None."""
     budg = retrieve_currbudget()
     validation = validate_currbudget(budg)
     if validation == "u":
@@ -487,13 +422,10 @@ def nextsteps_currbudget():
 
 
 def ask_budget():
-    """
-    Asks for budget and updates global budget variable.
+    """Asks for budget and updates global budget variable.
     If valid, calls for category selection.
-
     Returns:
-        None.
-    """
+        None."""
     clear_terminal()
     while True:
         month = retrieve_month()
@@ -506,17 +438,13 @@ def ask_budget():
             break
 
 
-def nextsteps_budget(budget_entry, month):
-    """
-    Executes nextsteps following buget validation.
-
+def nextsteps_budget(budget_entry: float, month: str):
+    """Executes nextsteps following buget validation.
     Args:
-        budget_entry (num): value of budget.
+        budget_entry (float): value of budget.
         month (str): budget month.
-
     Returns:
-        None.
-    """
+        None."""
     # Format the budget output to the user in their chosen currency.
     formatted_budget = format_expenses(user_currency, budget_entry)
     user_choice = confirm_input(formatted_budget)
@@ -538,13 +466,10 @@ def print_curr_intro():
 
 
 def ask_curr():
-    """
-    Displays selection of currency options in a table.
+    """Displays selection of currency options in a table.
     If valid, checks in.
-
     Returns:
-        curr (num): Number corresponding to currency in table.
-    """
+        curr (num): Number corresponding to currency in table."""
     print_curr_intro()
     while True:
         print("\n (💡 Type the 'No.' ")
@@ -558,19 +483,15 @@ def ask_curr():
                 clear_terminal()
                 print(f"\n ✅  Your chosen currency: '{str_curr}'")
                 ask_budget()
-                break
-        return curr
+                return curr
 
 
-def append_gsheet_exp(v):
-    """
-    Appends to main list for uploading to GS.
+def append_gsheet_exp(v: list):
+    """Appends to main list for uploading to GS.
     Args:
         v (list): Expenses retrieved from GS.
-
     Returns:
-        all_rows (list): Converted values of previously logged expenses.
-    """
+        all_rows (list): Converted values of previously logged expenses."""
     v = fetch_gsheet_exp()
     all_rows = []
     for expense in v:
@@ -582,9 +503,7 @@ def append_gsheet_exp(v):
 
 
 def validate_value(value, updates):
-    """
-    Chooses which value to append to secondary list.
-    """
+    """Chooses which value to append to secondary list."""
     if value:
         num_curr = SYMBOLS[value[0]][1]
         # In the case of 'GBP' where the value is '3,000'.
@@ -598,17 +517,13 @@ def validate_value(value, updates):
         updates.append(value)
 
 
-def update_currency_exps(v, new_rows):
-    """
-    Updates the converted previously logged expenses.
-
+def update_currency_exps(v: list, new_rows: list):
+    """Updates the converted previously logged expenses.
     Args:
         v (list): values retrieved from GS.
         new_rows (list): values to be uploaded to GS.
-
     Returns:
-        None.
-    """
+        None."""
     row_amount = len(v)
     for i in range(3, row_amount + 3):
         clear_range = [f"A{i}:F{i}"]
@@ -618,33 +533,24 @@ def update_currency_exps(v, new_rows):
 
 
 def ask_category():
-    """
-    Displays categories in a table.
-    If valid, calls for expense value.
-
+    """Displays categories in a table. If valid, calls for expense value.
     Returns:
-        cat (num): Number corresponding to category.
-    """
+        cat (num): Number corresponding to category."""
     create_table(EXPENSES, "Expense Category")
     while True:
         print("\n (💡  Type the 'No.' )")
         cat = input(" ➤  Please choose a category: ")
         if validate_selection(cat, 6):
             ask_expense(EXPENSES[int(cat)])
-        return cat
+            return cat
 
 
-def ask_expense(category):
-    """
-    Asks for expense in category.
-    If valid, calls expense loop.
-
+def ask_expense(category: str):
+    """Asks for expense in category.If valid, calls expense loop.
     Args:
         category (str): Expense category.
-
     Returns:
-        None.
-    """
+        None."""
     while True:
         expense_msg = f" ➤ Enter the amount you spent on {category}: "
         user_exp = input(expense_msg)
@@ -664,16 +570,12 @@ def ask_expense(category):
 
 
 def continue_expenses():
-    """
-    Expense logging loop with validation.
-
+    """Expense logging loop with validation.
     Returns:
-        (bool): Another expense or continue.
-    """
+        (bool): Another expense or continue."""
     while True:
         user_answer = input(
-            "\n➤  Type 'a' to add an expense, or 'c' to continue."
-            )
+            "\n➤  Type 'a' to add an expense, or 'c' to continue.")
         if user_answer == "a":
             clear_terminal()
             ask_category()
@@ -689,13 +591,10 @@ def continue_expenses():
 
 
 def check_list():
-    """
-    Checks expenses list for duplicate categories.
+    """Checks expenses list for duplicate categories.
     If found, merges categories and adds values.
-
     Returns:
-        non_duplicates (dict): Non-duplicated expenses.
-    """
+        non_duplicates (dict): Non-duplicated expenses."""
     # May contain duplicates.
     global user_expenses
     non_duplicates = {}
@@ -710,18 +609,14 @@ def check_list():
     return non_duplicates
 
 
-def create_expense(month, budget, colour="light_green"):
-    """
-    Creates conclusive user table with budget + expenses.
-
+def create_expense(month: int, budget: str, colour="light_green"):
+    """Creates conclusive user table with budget + expenses.
     Args:
         month (num): Num corresponding to Month selection.
         budget (str): Formatted budget.
         colour (str): Has default value of "light_green".
-
     Returns:
-        None.
-    """
+        None."""
     table = PrettyTable()
     budget = format_expenses(user_currency, budget)
     month = retrieve_month()
@@ -759,17 +654,13 @@ def create_expense(month, budget, colour="light_green"):
     nextsteps_expense_table(table)
 
 
-def nextsteps_expense_table(conc_table):
-    """
-    Prints the conclusive expense table.
+def nextsteps_expense_table(conc_table: str):
+    """Prints the conclusive expense table.
     Asks whether to upload to GS or exit.
-
     Args:
         conc_table (str): Expense table.
-
     Returns:
-    None
-    """
+        None"""
     clear_terminal()
     print(f"\n{conc_table}")
     ask_update()
@@ -778,7 +669,7 @@ def nextsteps_expense_table(conc_table):
 # ________ remainder value logic ___________
 
 
-def compare_budgets(orig_budg, orig_rem, new_budg):
+def compare_budgets(orig_budg: float, orig_rem: float, new_budg: float):
     if orig_budg == new_budg:
         new_remainder = orig_rem
     elif orig_budg < new_budg:
@@ -806,9 +697,9 @@ def retrieve_all_rem_calcs():
             )
         return new_rem
     else:
-        conv_orig_budg = round(
-            convert_gsheet_exp(orig_budg_curr, new_curr, orig_budg_num), 2
-        )
+        # conv_orig_budg = round(
+        #     convert_gsheet_exp(orig_budg_curr, new_curr, orig_budg_num), 2
+        # )
         conv_orig_rem = round(
             convert_gsheet_exp(orig_rem_curr, new_curr, orig_rem_num), 2
         )
@@ -816,10 +707,8 @@ def retrieve_all_rem_calcs():
 
 
 def calculate_budget_remainder():
-    """
-    Returns:
-        user_budget_remainder (str): Budget remainder post expense deduction.
-    """
+    """Returns:
+        user_budget_remainder (str): Budget remainder post deductions."""
     rem = retrieve_remainder_value()
     if rem is None:
         num_remainder = float(user_budget)
@@ -833,16 +722,12 @@ def calculate_budget_remainder():
 
 
 def ask_update():
-    """
-    Asks to update google sheets or quit application.
-
+    """Asks to update google sheets or quit application.
     Returns:
-        None.
-    """
+        None."""
     while True:
         user_update = input(
-            "\n   ➤ Type 'u' to upload your expenses, or 'q' to exit: "
-            )
+            "\n ➤ Type 'u' to upload your expenses, or 'q' to exit: ")
         if user_update == "u":
             update_worksheet()
             break
@@ -855,10 +740,8 @@ def ask_update():
 
 
 def format_data():
-    """
-    Returns:
-        format (list): sorted user expenses with currency symbol.
-    """
+    """Returns:
+        format (list): sorted user expenses with currency symbol."""
     format = {
         "Rent": "",
         "Groceries": "",
@@ -875,12 +758,9 @@ def format_data():
 
 
 def expensive_battleships():
-    """
-    Adds two parameters to create a cell format, e.g. 'C3'.
-
+    """Adds two parameters to create a cell format, e.g. 'C3'.
     Returns:
-        cells (list): cells to be updated.
-    """
+        cells (list): cells to be updated."""
     OV_SHEET = retrieve_overview()
     global user_month
     global user_expenses
@@ -906,12 +786,9 @@ def expensive_battleships():
 
 
 def update_OV_cell_values():
-    """
-    Updates "Overview" sheet with values.
-
+    """Updates "Overview" sheet with values.
     Returns:
-        None.
-    """
+        None."""
     cells_to_update = expensive_battleships()
     user_logs = list(user_expenses.values())
     OV = retrieve_overview()
@@ -925,7 +802,9 @@ def update_OV_cell_values():
             else:
                 old_curr = retrieve_value_currency(cell_value)
                 cell_value = remove_formatting(cell_value)
-                cell_value = round(convert_gsheet_exp(old_curr, user_currency, cell_value), 2)
+                cell_value = round(
+                    convert_gsheet_exp(old_curr, user_currency, cell_value), 2
+                )
                 addition = cell_value + float(initial_log)
                 addition = format_expenses(user_currency, addition)
             OV.update_acell(cell, addition)
@@ -934,12 +813,9 @@ def update_OV_cell_values():
 
 
 def update_worksheet():
-    """
-    Updates relevant Google Sheet with user's expenses.
-
+    """Updates relevant Google Sheet with user's expenses.
     Returns:
-        None.
-    """
+        None."""
     print("⌛  Updating your worksheet...")
     values = fetch_gsheet_exp()
     append_gsheet_exp(values)
@@ -952,12 +828,9 @@ def update_worksheet():
 
 
 def main():
-    """
-    Starts application.
-
+    """Starts application.
     Returns:
-        None.
-    """
+        None."""
     print_intro()
     ask_name()
 
