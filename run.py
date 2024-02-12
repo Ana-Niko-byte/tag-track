@@ -282,11 +282,13 @@ def remove_formatting(exp_value):
 def retrieve_value_currency(exp_value):
     if exp_value is None:
         symbol = float(user_budget[1:].replace(",", ""))
+        curr = user_currency
     elif str(exp_value)[0] == "-":
         symbol = str(exp_value)[1]
+        curr = SYMBOLS[symbol][1]
     else:
         symbol = str(exp_value)[0]
-    curr = SYMBOLS[symbol][1]
+        curr = SYMBOLS[symbol][1]
     return curr
 
 
@@ -640,6 +642,7 @@ def ask_expense(category):
                 continue_expenses()
                 break
             elif user_choice == "c":
+                clear_terminal()
                 ask_category()
                 break
 
@@ -800,7 +803,7 @@ def calculate_budget_remainder():
     """
     rem = retrieve_remainder_value()
     if rem is None:
-        num_remainder = user_budget
+        num_remainder = float(user_budget)
     else:
         num_remainder = retrieve_all_rem_calcs()
     total = sum(user_expenses.values())
@@ -900,8 +903,10 @@ def update_OV_cell_values():
                 cell_value = 0
                 addition = format_expenses(user_currency, initial_log)
             else:
-                addition = float(
-                    cell_value[1:].replace(",", "")) + float(initial_log)
+                old_curr = retrieve_value_currency(cell_value)
+                cell_value = remove_formatting(cell_value)
+                cell_value = round(convert_gsheet_exp(old_curr, user_currency, cell_value), 2)
+                addition = cell_value + float(initial_log)
                 addition = format_expenses(user_currency, addition)
             OV.update_acell(cell, addition)
     print("\n ✅  We've successfully updated your Month sheet!")
