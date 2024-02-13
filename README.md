@@ -372,6 +372,7 @@ To changes to your repository (or part of it) without affecting it's original st
 
 # Credits
 - [Currencies](https://pypi.org/project/currencies/) (Research and two lines of logic).
+- [Emojis](https://emojipedia.org/smirking-face)
 - [How to Use gspread](https://docs.gspread.org/en/latest/user-guide.html)
 - [Convert Num to Letter (stack overflow)](https://stackoverflow.com/questions/18544419/how-to-convert-numbers-to-alphabet)
 - [Clear os screen](https://www.scaler.com/topics/how-to-clear-screen-in-python/)
