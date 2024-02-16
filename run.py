@@ -174,7 +174,7 @@ def print_intro():
     Returns:
         None."""
     clear_terminal()
-    text = text2art("Tag - Track")
+    text = text2art("$ Tag - Track")
     print(Fore.LIGHTGREEN_EX + text + Fore.RESET)
 
 
