@@ -372,7 +372,7 @@ def retrieve_value_currency(exp_value: str):
     elif exp_value[0] == "-":
         symbol = str(exp_value)[1]
         retrieved_curr = SYMBOLS[symbol][1]
-    else:
+    else: 
         symbol = str(exp_value)[0]
         retrieved_curr = SYMBOLS[symbol][1]
     return retrieved_curr
@@ -508,6 +508,7 @@ def validate_currbudget(budg):
                 break
             elif user_budget_input == "c":
                 clear_terminal()
+                print_curr_intro()
                 ask_curr()
                 break
             else:
@@ -563,6 +564,9 @@ def nextsteps_budget(budget_entry: float, month: str):
         clear_terminal()
         print(f" ✅  Budget for {month}: {formatted_budget}")
         ask_category()
+    if user_choice == 'c':
+        clear_terminal()
+        ask_budget()
 
 
 # __________ end of budget handling logic ____________
@@ -782,7 +786,7 @@ def nextsteps_expense_table(conc_table: str):
         conc_table (str): Expense table.
     Returns:
         None"""
-    clear_terminal()
+    # clear_terminal()
     print(f"\n{conc_table}")
     ask_update()
 
@@ -797,12 +801,12 @@ def compare_budgets(orig_budg: float, orig_rem: float, new_budg: float):
     new_budg = float(new_budg)
     if orig_budg == new_budg:
         new_remainder = orig_rem
-    elif orig_budg < new_budg:
-        increase = new_budg - orig_budg
-        new_remainder = orig_rem + increase
-    else:
+    elif new_budg > orig_budg:
         decrease = orig_budg - new_budg
         new_remainder = orig_rem - decrease
+    else:
+        increase = new_budg - orig_budg
+        new_remainder = orig_rem + increase
     return new_remainder
 
 
@@ -827,7 +831,10 @@ def retrieve_all_rem_calcs():
     else:
         conv_orig_rem = round(
             convert_gsheet_exp(orig_rem_curr, retrieved_curr, orig_rem_num), 2)
-        return conv_orig_rem
+        conv_orig_budg = round(
+            convert_gsheet_exp(orig_budg_curr, retrieved_curr, orig_budg_num), 2)
+        new_rem = compare_budgets(conv_orig_budg, float(retrieved_budg), conv_orig_rem)
+        return new_rem
 
 
 def calculate_budget_remainder():
@@ -939,6 +946,24 @@ def update_OV_cell_values():
             OV.update_acell(cell, addition)
     print("\n ✅  We've successfully updated your Month sheet!")
     print("Check your Overview sheet to view your entire expense history.")
+    ask_to_exit()
+
+
+def ask_to_exit():
+    while True:
+        ex_user = input(
+            "\nPlease type 'q' to exit, or 's' to re-start the application: ").strip().lower()
+        if ex_user == 'q':
+            exit_tag()
+            break
+        elif ex_user == 's':
+            # Reset expenses from a dict to empty list.
+            replace_expenses([])
+            ask_month()
+            break
+        else:
+            print("\n ❌  Invalid input.")
+            print(" 👉  Please choose either 'q', or 's' to proceed.")
 
 
 def update_worksheet():

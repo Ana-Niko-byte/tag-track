@@ -285,6 +285,7 @@ After running a conversion from one currency to another using the same values, t
 This application was developed using VSCode's Pylance; a fast and feature-rich language server for Python that provides excellent IntelliSense capabilities. It enhances your development experience with: Type checking. Autocompletion.
 
 # Deployment
+Please Note: The guide below details the steps in accordance with the original application deployment titled 'tag-track', however due to some billing issues the application fell asleep (as can be seen from the third image below) and later faded into a lighter purple. The application is now deployed using 'tag-track-revived', with the exact same steps. 
 
 ### General Requirements:
 - Your Python code must be placed in the `run.py` file.
