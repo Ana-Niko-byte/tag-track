@@ -351,9 +351,9 @@ def retrieve_currbudget():
 
 
 def remove_formatting(exp_value: str):
-    retrieved_budg = retrieve_budget()
     if exp_value is None:
-        num_only = float(retrieved_budg[1:].replace(",", ""))
+        retrieved_budg = retrieve_budget()
+        num_only = float(str(retrieved_budg)[1:].replace(",", ""))
     elif exp_value:
         neg_pos = exp_value[0]
         if neg_pos == "-":
@@ -367,9 +367,7 @@ def remove_formatting(exp_value: str):
 def retrieve_value_currency(exp_value: str):
     """Returns:
     Retrieved int currency."""
-    retrieved_budg = retrieve_budget()
     if exp_value is None:
-        symbol = float(retrieved_budg[1:].replace(",", ""))
         retrieved_curr = retrieve_currency()
     elif exp_value[0] == "-":
         symbol = str(exp_value)[1]
@@ -842,7 +840,7 @@ def calculate_budget_remainder():
     else:
         set_remainder = retrieve_all_rem_calcs()
     total = sum(exps.values())
-    remainder = round(set_remainder - float(total), 2)
+    remainder = round(float(set_remainder) - float(total), 2)
     update_remainder(remainder)
     return remainder
 

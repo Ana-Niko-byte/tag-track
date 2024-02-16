@@ -185,8 +185,6 @@ The conclusive user table displays a summary of the user's logged expenses. The 
 ### Google Sheets Logging + Overview Calculations
 Under the conclusive user expense table, the user is asked whether they want to log their expenses to Google Sheets. If not, the application displays a goodbye message and does not log anything. If yes, the expenses are logged to Google Sheets and the overview sheet is automatically updated with new totals.
 
-![google sheets feature](docs/images/track-one.png)
-
 Below is an example after the user has been logging expenses over the course of a few months. Expenses are added up and logged to the overview sheet. In the case of cell 'F2' - where the currency differs from the rest, the user had logged only one expense, the currency of 'GBP'. This means that any existing value for that category was converted to 'GBP', prior to having the new expense added onto it and logged.
 ![overview feature](docs/images/tag-track-overview.png)
 
