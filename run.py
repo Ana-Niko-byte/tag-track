@@ -56,110 +56,105 @@ COLUMNS = []
 
 
 def create_user_month():
-    """Getter & Setter functions for int value of month"""
+    """Getter & Setter functions for int month value.
+    Returns:
+        retrieve & update month functions."""
     user_month = None
-
-    """Retrieves user_month on call"""
 
     def retrieve_month():
         return user_month
 
-    """Updates user_month with int argument"""
-
+    """Updates user_month with int argument."""
     def update_month(set_month: int):
         nonlocal user_month
         user_month = set_month
-
     return retrieve_month, update_month
 
 def create_user_budget():
-    """Getter & Setter functions for int value of month"""
+    """Getter & Setter functions for float budget value.
+    Returns:
+        retrieve & update budget functions."""
     user_budget = None
-
-    """Retrieves user_month on call"""
 
     def retrieve_budget():
         return user_budget
 
-    """Updates user_month with int argument"""
-
+    """Updates user_budget with float argument."""
     def update_budget(set_budget: float):
         nonlocal user_budget
         user_budget = set_budget
-
     return retrieve_budget, update_budget
 
 def create_user_currency():
-    """Getter & Setter functions for int value of month"""
+    """Getter & Setter functions for int currency value.
+    Returns:
+        retrieve & update currency functions."""
     user_currency = None
-
-    """Retrieves user_month on call"""
 
     def retrieve_currency():
         return user_currency
 
-    """Updates user_month with int argument"""
-
+    """Updates user_currency with int argument."""
     def update_currency(set_currency: int):
         nonlocal user_currency
         user_currency = set_currency
-
     return retrieve_currency, update_currency
 
 def create_user_budget_remainder():
-    """Getter & Setter functions for int value of month"""
+    """Getter & Setter functions for float remainder value.
+    Returns:
+        retrieve and update budget remainder functions."""
     user_budget_remainder = None
-
-    """Retrieves user_month on call"""
 
     def retrieve_budget_remainder():
         return user_budget_remainder
 
-    """Updates user_month with int argument"""
-
+    """Updates user_budget_remainder with float argument."""
     def update_budget_remainder(set_remainder: float):
         nonlocal user_budget_remainder
         user_budget_remainder = set_remainder
-
     return retrieve_budget_remainder, update_budget_remainder
 
 def create_user_gsheet():
-    """Getter & Setter functions for int value of month"""
+    """Getter & Setter functions for user google sheet.
+    Returns:
+        retrieve & update user google sheet functions."""
     user_gsheet = None
-
-    """Retrieves user_month on call"""
 
     def retrieve_gsheet():
         return user_gsheet
 
-    """Updates user_month with int argument"""
-
+    """Updates user_gsheet with str argument."""
     def update_gsheet(gsheet_name: str):
         nonlocal user_gsheet
         user_gsheet = gsheet_name
-
     return retrieve_gsheet, update_gsheet
 
 def create_user_expenses():
+    """Getter & Setter functions for list create_user_expenses value.
+    Returns:
+        retrieve, update (append), and replace expenses functions."""
     user_expenses = []
 
     def retrieve_expenses():
         return user_expenses
     
+    """Updates the list with an argument"""
     def update_expenses(value: list):
         nonlocal user_expenses
         user_expenses.append(value)
 
+    """Replaces list user_expenses"""
     def replace_expenses(value: any):
         nonlocal user_expenses
         user_expenses = value
-
     return retrieve_expenses, update_expenses, replace_expenses
-# user_expenses = []
 
 
 def print_intro():
-    """Prints intro heading with colorama styling library."""
+    """Prints intro heading with colorama styling library.
+    Returns:
+        None."""
     clear_terminal()
     text = text2art("Tag - Track")
     print(Fore.LIGHTGREEN_EX + text + Fore.RESET)
@@ -172,7 +167,9 @@ def exit_tag():
 
 
 def clear_terminal():
-    """Clears the terminal screen for improved UX based on os."""
+    """Clears the terminal screen for improved UX based on os.
+    Returns:
+        None."""
     # For windows os.
     if os.name == "nt":
         os.system("cls")
@@ -248,7 +245,7 @@ def confirm_input(user_input: any, additional="."):
     while True:
         print(f"\n 👉  You've chosen {user_input}{additional}")
         user_conf = input(
-            "Type 'p' to proceed, 'c' to change, or 'q' to quit: ")
+            "Type 'p' to proceed, 'c' to change, or 'q' to quit: ").strip().lower()
         if not user_conf:
             print("\n ❌  Please enter a value to continue.\n")
         elif user_conf == "p" or user_conf == "c":
@@ -313,13 +310,13 @@ def append_remainder():
 
 def retrieve_overview():
     """Returns:
-        Overview sheet from Google Sheets."""
+        None, or Overview sheet from Google Sheets."""
     return SHEET.worksheet("Overview")
 
 
 def retrieve_remainder_value():
     """Returns:
-        (str): Current budget remainder from GS."""
+        (str): None, or Current budget remainder from GS."""
     gsheet = retrieve_gsheet()
     return gsheet.acell("F1").value
 
@@ -327,7 +324,7 @@ def retrieve_remainder_value():
 def retrieve_currbudget():
     """Retrieves current budget value. Performs some basic validation.
     Returns:
-        Either None, or budget (str)."""
+        None, or budget (str)."""
     gsheet = retrieve_gsheet()
     return gsheet.acell("B1").value
 
@@ -347,11 +344,12 @@ def remove_formatting(exp_value: str):
 
 
 def retrieve_value_currency(exp_value: str):
+    """Returns:
+        Retrieved int currency."""
     retrieved_budg = retrieve_budget()
     if exp_value is None:
         symbol = float(retrieved_budg[1:].replace(",", ""))
         retrieved_curr = retrieve_currency()
-        # curr = retrieved_curr
     elif exp_value[0] == "-":
         symbol = str(exp_value)[1]
         retrieved_curr = SYMBOLS[symbol][1]
@@ -484,7 +482,7 @@ def validate_currbudget(budg):
         while True:
             user_budget_input = input(
                 "\n ➤  Type 'u' to use existing or 'c' to change: "
-            )
+            ).strip().lower()
             if user_budget_input == "u":
                 print(f"✅  Budget for {budg_month}: {budg}")
                 break
@@ -551,6 +549,9 @@ def nextsteps_budget(budget_entry: float, month: str):
 
 
 def print_curr_intro():
+    """Prints beginning of currency selection.
+    Returns:
+        None."""
     clear_terminal()
     month = retrieve_month()
     budg_month = MONTHS[int(month)]
@@ -595,7 +596,9 @@ def append_gsheet_exp(v: list):
 
 
 def validate_value(value, updates):
-    """Chooses which value to append to secondary list."""
+    """Chooses which value to append to secondary list.
+    Returns:
+        None."""
     if value:
         num_curr = SYMBOLS[value[0]][1]
         # In the case of 'GBP' where the value is '3,000'.
@@ -669,7 +672,7 @@ def continue_expenses():
         (bool): Another expense or continue."""
     while True:
         user_answer = input(
-            "\n➤  Type 'a' to add an expense, or 'c' to continue.")
+            "\n➤  Type 'a' to add an expense, or 'c' to continue.").strip().lower()
         if user_answer == "a":
             clear_terminal()
             ask_category()
@@ -728,6 +731,7 @@ def create_expense(month: int, budget: str, colour="light_green"):
         table.add_row([colored(list_cat, "white"), colored(f_exp, "white")])
         table.align = "l"
 
+    retrieve_all_rem_calcs()
     remainder = calculate_budget_remainder()
     remainder = format_expenses(retrieved_curr, remainder)
     table.add_row(["-----------------------", "-----------------------"])
@@ -746,7 +750,6 @@ def create_expense(month: int, budget: str, colour="light_green"):
                 colored(remainder, "green"),
             ]
         )
-    retrieve_all_rem_calcs()
     nextsteps_expense_table(table)
 
 
@@ -766,6 +769,10 @@ def nextsteps_expense_table(conc_table: str):
 
 
 def compare_budgets(orig_budg: float, orig_rem: float, new_budg: float):
+    """Compares original and new budgets to determine remainder logic.
+    Returns:
+        new_remainder (float): remainder to be added to existing."""
+    new_budg = float(new_budg)
     if orig_budg == new_budg:
         new_remainder = orig_rem
     elif orig_budg < new_budg:
@@ -778,6 +785,10 @@ def compare_budgets(orig_budg: float, orig_rem: float, new_budg: float):
 
 
 def retrieve_all_rem_calcs():
+    """Retrieves all values necessary for calculation of remainder.
+    Returns:
+        actual value of budget remainder.
+        """
     orig_budg = retrieve_currbudget()
     orig_rem = retrieve_remainder_value()
     orig_budg_curr = retrieve_value_currency(orig_budg)
@@ -797,7 +808,6 @@ def retrieve_all_rem_calcs():
             convert_gsheet_exp(orig_rem_curr, retrieved_curr, orig_rem_num), 2
         )
         return conv_orig_rem
-
 
 def calculate_budget_remainder():
     """Returns:
@@ -820,7 +830,7 @@ def ask_update():
         None."""
     while True:
         user_update = input(
-            "\n ➤ Type 'u' to upload your expenses, or 'q' to exit: ")
+            "\n ➤ Type 'u' to upload your expenses, or 'q' to exit: ").strip().lower()
         if user_update == "u":
             update_worksheet()
             break
@@ -845,8 +855,6 @@ def format_data():
     }
     expenses = retrieve_expenses()
     retrieved_curr = retrieve_currency()
-    print(retrieved_curr)
-    print('from format data')
     for key, value in expenses.items():
         if key in format:
             format[key] = format_expenses(retrieved_curr, value)
