@@ -2,12 +2,14 @@ import gspread
 import os
 from google.oauth2.service_account import Credentials
 from art import *
-from forex_python.converter import CurrencyRates
+from forex_python.converter import CurrencyRates, RatesNotAvailableError
 from decimal import Decimal
 from colorama import Fore
 from prettytable import PrettyTable
 from termcolor import colored
 from currencies import Currency
+# import requests
+# from config import API_KEY
 
 # Code and links taken from love-sandwiches project.
 SCOPE = [
@@ -54,6 +56,21 @@ SHEET = GSPREAD_CLIENT.open("Tag-Track")
 # These are used in user-feedback throughout the application.
 COLUMNS = []
 
+# def get_latest_exchange_rates(api_key):
+#     url = f"https://api.exchangeratesapi.io/v1/latest? access_key = {API_KEY}"
+#     response = requests.get(url)
+#     if response.status_code == 200:
+#         return response.json()
+#     else:
+#         return None
+
+# def get_api_key():
+#     return API_KEY
+
+# def get_rates():
+#     api = get_api_key()
+#     rates = get_latest_exchange_rates(api)
+#     print(rates)
 
 def create_user_month():
     """Getter & Setter functions for int month value.
@@ -351,6 +368,11 @@ def retrieve_currbudget():
 
 
 def remove_formatting(exp_value: str):
+    """
+    Removes currency symbol and converts to float.
+    Returns:
+        num_only (float).
+    """
     if exp_value is None:
         retrieved_budg = retrieve_budget()
         num_only = float(str(retrieved_budg)[1:].replace(",", ""))
@@ -372,7 +394,7 @@ def retrieve_value_currency(exp_value: str):
     elif exp_value[0] == "-":
         symbol = str(exp_value)[1]
         retrieved_curr = SYMBOLS[symbol][1]
-    else: 
+    else:
         symbol = str(exp_value)[0]
         retrieved_curr = SYMBOLS[symbol][1]
     return retrieved_curr
@@ -400,12 +422,17 @@ def convert_gsheet_exp(old_curr: int, chosen_curr: int, exp: float):
     Returns:
         new_amount (int): the converted expense."""
     # Code from forex-python documentation.
-    c = CurrencyRates()
-    new_amount = c.convert(
-        CURRENCY[int(old_curr)],
-        CURRENCY[int(chosen_curr)],
-        exp)
-    return new_amount
+    try:
+        c = CurrencyRates()
+        new_amount = c.convert(
+            CURRENCY[int(old_curr)],
+            CURRENCY[int(chosen_curr)],
+            exp)
+        return new_amount
+    except:
+        print("\nAn error occurred while fetching Currency Rates.")
+        print("Please try again a little later.\n")
+        raise RatesNotAvailableError("Currency Rates Source Unavailable.")
 
 
 def num_lett(num: int):
@@ -562,7 +589,7 @@ def nextsteps_budget(budget_entry: float, month: str):
     user_choice = confirm_input(formatted_budget)
     if user_choice == "p":
         clear_terminal()
-        print(f" ✅  Budget for {month}: {formatted_budget}")
+        print(f"\n ✅  Budget for {month}: {formatted_budget}")
         ask_category()
     if user_choice == 'c':
         clear_terminal()
@@ -680,7 +707,7 @@ def ask_expense(category: str):
             form_expense = format_expenses(retrieved_curr, user_exp)
             user_choice = confirm_input(form_expense, f' for "{category}".')
             if user_choice == "p":
-                print(" ✅  Saved!\n ⌛  Updating your expense log...")
+                print("\n ✅  Saved!\n ⌛  Updating your expense log...")
                 update_expenses([category, user_exp])
                 continue_expenses()
                 break
@@ -832,8 +859,12 @@ def retrieve_all_rem_calcs():
         conv_orig_rem = round(
             convert_gsheet_exp(orig_rem_curr, retrieved_curr, orig_rem_num), 2)
         conv_orig_budg = round(
-            convert_gsheet_exp(orig_budg_curr, retrieved_curr, orig_budg_num), 2)
-        new_rem = compare_budgets(conv_orig_budg, float(retrieved_budg), conv_orig_rem)
+            convert_gsheet_exp(
+                orig_budg_curr, retrieved_curr, orig_budg_num), 2)
+        new_rem = compare_budgets(
+            conv_orig_budg,
+            float(retrieved_budg),
+            conv_orig_rem)
         return new_rem
 
 
@@ -908,15 +939,38 @@ def expensive_battleships():
     for key in used_keys:
         cell = OV_SHEET.find(key)
         # Index of column.
-        cell_column = cell.col
-        lettered_column = num_lett(cell_column)
+        lettered_column = num_lett(cell.col)
         column_indexes.append(lettered_column)
 
     cells = []
     for battleship_one in column_indexes:
-        cell = battleship_one + str(battleship_two)
-        cells.append(cell)
+        cells.append(battleship_one + str(battleship_two))
     return cells
+
+
+def convert_OV_finals():
+    OV_gsheet = retrieve_overview()
+    month_int = int(retrieve_month()) + 1
+    values = OV_gsheet.row_values(month_int)[1:]
+    conv_values = []
+    for value in values:
+        old_curr = int(retrieve_value_currency(value))
+        curr = int(retrieve_currency())
+        new_value = float(remove_formatting(value))
+        conv_value = convert_gsheet_exp(old_curr, curr, new_value)
+        print(f"old curr: {old_curr}")
+        print(f"new curr {curr}")
+        print(new_value)
+        print(conv_value)
+        conv_values.append(conv_value)
+    print(conv_values)
+    # values = gsheet.getRange(f"B{row_num}:F{row_num}").getValues()
+    # print(values)
+    # gsheet.update(f"B{row_num}:F{row_num}", )
+    # clear_range = [f"B{row_num}:F{row_num}"]
+    # OV_gsheet.batch_clear(clear_range)
+    # for row in new_rows:
+    #     gsheet.append_row(row)
 
 
 def update_OV_cell_values():
@@ -951,14 +1005,17 @@ def update_OV_cell_values():
 
 def ask_to_exit():
     while True:
-        ex_user = input(
-            "\nPlease type 'q' to exit, or 's' to re-start the application: ").strip().lower()
+        ex_user = (input(
+            "\nPlease type 'q' to exit, or 's' to re-start the application: ")
+            .strip()
+            .lower())
         if ex_user == 'q':
             exit_tag()
             break
         elif ex_user == 's':
             # Reset expenses from a dict to empty list.
             replace_expenses([])
+            clear_terminal()
             ask_month()
             break
         else:
@@ -980,6 +1037,7 @@ def update_worksheet():
     gsheet = retrieve_gsheet()
     gsheet.append_row(values_to_append)
     update_OV_cell_values()
+    convert_OV_finals()
 
 
 def main():
@@ -988,6 +1046,7 @@ def main():
         None."""
     print_intro()
     ask_name()
+    # get_rates()
 
 
 main()

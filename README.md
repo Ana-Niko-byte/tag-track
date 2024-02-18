@@ -281,6 +281,17 @@ This error was encountered after implementing a function that would clear the te
 
 After running a conversion from one currency to another using the same values, the conversion values showed differences on average of .40 in several instances. This issue was likely due to the way the program was designed, where the user's logged expenses were not correctly rounded to 2 decimals.
 
+## API Issue
+A _RatesNotAvailableError_ issue with the python-forex library for currency conversion was discovered on 17/02/24 once the application was nearing completion. This issue was due to the [ratesapi.io](https://forex-python.readthedocs.io/en/latest/currencysource.html) being temporarily unavailable. Due to this issue and the project's nearing deadline, a decision was made to remove currency selection from the project - rendering much of its functionality described previously in this README obsolete. 
+
+![terminal API error](docs/images/RatesNotAvailableError.png)
+
+This issue was highlighted in the library's repository in the 'issues' tab, and upon further investigation, it appears the API is taken down regularly for maintenance. Below is an image of correspondence for reference. This exchange is available for viewing [here](https://github.com/MicroPyramid/forex-python/issues/153).
+
+![github api exchange](docs/images/rates-github.png)
+
+It is my intention to re-encorporate this logic into the application through the original API source following course completion. 
+
 # Accessibility & Performance
 This application was developed using VSCode's Pylance; a fast and feature-rich language server for Python that provides excellent IntelliSense capabilities. It enhances your development experience with: Type checking. Autocompletion.
 
@@ -381,11 +392,14 @@ To changes to your repository (or part of it) without affecting it's original st
 - Press Enter - you now have a cloned version of your github repository.
 
 # Future Development
-- Overview Sheet: 
-It is my intention to develop the overview sheet to log all expenses for one month in the same currency. As things stand, only the category that gets an expense logged to it in a different currency is updated, whereas the entire month sheet gets it's values converted. 
 
-- API Currency Conversions
+### API Currency Conversions
+Since the API crashed, I've had to remove some core logic from the application. It is my intention to re-encorporate it back into the application following course completion. The original code as it is from this commit message has been forked into a private repository for reference at a later stage. 
+
 Integrate more accurate Currency Conversions - when comparing forex-python rates with those from a quick google search, there appears to be a mismatch averaging around 20 units. I would like to incorporate some sort of API to handle this conversion for more accurate, real-time results. 
+
+### Overview Sheet
+It is my intention to develop the overview sheet to log all expenses for one month in the same currency. As things stand, only the category that gets an expense logged to it in a different currency is updated, whereas the entire month sheet gets it's values converted. This functionality was being developed when the currency conversion API crashed. 
 
 # Credits
 - [Currencies](https://pypi.org/project/currencies/) (Research and two lines of logic).
