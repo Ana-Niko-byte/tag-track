@@ -2,14 +2,11 @@ import gspread
 import os
 from google.oauth2.service_account import Credentials
 from art import *
-from forex_python.converter import CurrencyRates, RatesNotAvailableError
 from decimal import Decimal
 from colorama import Fore
 from prettytable import PrettyTable
 from termcolor import colored
 from currencies import Currency
-# import requests
-# from config import API_KEY
 
 # Code and links taken from love-sandwiches project.
 SCOPE = [
@@ -33,10 +30,6 @@ MONTHS = {
     12: "December",
 }
 
-# Currency the user can select for logging an expense.
-CURRENCY = {1: "EUR", 2: "GBP", 3: "USD"}
-SYMBOLS = {"€": ["EUR", 1], "£": ["GBP", 2], "$": ["USD", 3]}
-
 # Categories the user can select for logging an expense.
 EXPENSES = {
     1: "Rent",
@@ -55,22 +48,6 @@ SHEET = GSPREAD_CLIENT.open("Tag-Track")
 # List of read-only headers from google sheets.
 # These are used in user-feedback throughout the application.
 COLUMNS = []
-
-# def get_latest_exchange_rates(api_key):
-#     url = f"https://api.exchangeratesapi.io/v1/latest? access_key = {API_KEY}"
-#     response = requests.get(url)
-#     if response.status_code == 200:
-#         return response.json()
-#     else:
-#         return None
-
-# def get_api_key():
-#     return API_KEY
-
-# def get_rates():
-#     api = get_api_key()
-#     rates = get_latest_exchange_rates(api)
-#     print(rates)
 
 def create_user_month():
     """Getter & Setter functions for int month value.
@@ -106,24 +83,6 @@ def create_user_budget():
         user_budget = set_budget
 
     return retrieve_budget, update_budget
-
-
-def create_user_currency():
-    """Getter & Setter functions for int currency value.
-    Returns:
-        retrieve & update currency functions."""
-    user_currency = None
-
-    def retrieve_currency():
-        return user_currency
-
-    """Updates user_currency with int argument."""
-
-    def update_currency(set_currency: int):
-        nonlocal user_currency
-        user_currency = set_currency
-
-    return retrieve_currency, update_currency
 
 
 def create_user_budget_remainder():
@@ -326,10 +285,9 @@ def append_budget():
         budget (str): Value to be uploaded.
     Returns:
         None."""
-    retrieved_curr = retrieve_currency()
     retrieved_budg = retrieve_budget()
     gsheet = retrieve_gsheet()
-    user_budget_format = format_expenses(retrieved_curr, retrieved_budg)
+    user_budget_format = format_expenses(retrieved_budg)
     gsheet.update_acell("B1", user_budget_format)
 
 
@@ -339,10 +297,9 @@ def append_remainder():
         remainder (str): Value to be uploaded.
     Returns:
         None."""
-    retrieved_curr = retrieve_currency()
     retrieved_rem = retrieve_remainder()
     gsheet = retrieve_gsheet()
-    user_rem_format = format_expenses(retrieved_curr, retrieved_rem)
+    user_rem_format = format_expenses(retrieved_rem)
     gsheet.update_acell("F1", user_rem_format)
 
 
@@ -386,21 +343,7 @@ def remove_formatting(exp_value: str):
     return num_only
 
 
-def retrieve_value_currency(exp_value: str):
-    """Returns:
-    Retrieved int currency."""
-    if exp_value is None:
-        retrieved_curr = retrieve_currency()
-    elif exp_value[0] == "-":
-        symbol = str(exp_value)[1]
-        retrieved_curr = SYMBOLS[symbol][1]
-    else:
-        symbol = str(exp_value)[0]
-        retrieved_curr = SYMBOLS[symbol][1]
-    return retrieved_curr
-
-
-def format_expenses(curr: int, expense: float):
+def format_expenses(expense: float):
     """Formats the user's expenses with the chosen currency symbol.
     Args:
         curr (num): Number corresponding currency in table.
@@ -408,31 +351,9 @@ def format_expenses(curr: int, expense: float):
     Returns:
         formatted_expense (str): Formatted Expense."""
     # Code taken from Currency example on pypi.org
-    currency = Currency(CURRENCY[int(curr)])
+    currency = Currency('EUR')
     formatted_expense = currency.get_money_format(expense)
     return formatted_expense
-
-
-def convert_gsheet_exp(old_curr: int, chosen_curr: int, exp: float):
-    """Converts expense currency.
-    Args:
-        old_curr (int): number of original currency from table.
-        chosen_curr (int): number of new currency from table.
-        exp (float): expense to be converted.
-    Returns:
-        new_amount (int): the converted expense."""
-    # Code from forex-python documentation.
-    try:
-        c = CurrencyRates()
-        new_amount = c.convert(
-            CURRENCY[int(old_curr)],
-            CURRENCY[int(chosen_curr)],
-            exp)
-        return new_amount
-    except:
-        print("\nAn error occurred while fetching Currency Rates.")
-        print("Please try again a little later.\n")
-        raise RatesNotAvailableError("Currency Rates Source Unavailable.")
 
 
 def num_lett(num: int):
@@ -449,7 +370,6 @@ def num_lett(num: int):
 retrieve_month, update_month = create_user_month()
 retrieve_budget, update_budget = create_user_budget()
 retrieve_remainder, update_remainder = create_user_budget_remainder()
-retrieve_currency, update_currency = create_user_currency()
 retrieve_gsheet, update_gsheet = create_user_gsheet()
 retrieve_expenses, update_expenses, replace_expenses = create_user_expenses()
 
@@ -524,7 +444,6 @@ def validate_currbudget(budg):
         month = retrieve_month()
         budg_month = MONTHS[int(month)]
         print(f"\n ⚠️  Budget for {budg_month} is set to {budg}.⚠️")
-        print(f"A new currency will convert all {budg_month} expenses.")
         while True:
             user_budget_input = (
                 input("\n ➤  Type 'u' to use existing or 'c' to change: ")
@@ -535,15 +454,14 @@ def validate_currbudget(budg):
                 break
             elif user_budget_input == "c":
                 clear_terminal()
-                print_curr_intro()
-                ask_curr()
+                ask_budget()
                 break
             else:
                 print(" ❌  Invalid input.")
                 print(" 👉  Please choose either 'u', or 'c' to proceed.")
         return user_budget_input
     else:
-        ask_curr()
+        ask_budget()
 
 
 def nextsteps_currbudget():
@@ -553,8 +471,6 @@ def nextsteps_currbudget():
     budg = retrieve_currbudget()
     validation = validate_currbudget(budg)
     if validation == "u":
-        num_curr = retrieve_value_currency(budg)
-        update_currency(num_curr)
         budg = remove_formatting(budg)
         update_budget(budg)
         ask_category()
@@ -583,9 +499,7 @@ def nextsteps_budget(budget_entry: float, month: str):
         month (str): budget month.
     Returns:
         None."""
-    # Format the budget output to the user in their chosen currency.
-    retrieved_curr = retrieve_currency()
-    formatted_budget = format_expenses(retrieved_curr, budget_entry)
+    formatted_budget = format_expenses(budget_entry)
     user_choice = confirm_input(formatted_budget)
     if user_choice == "p":
         clear_terminal()
@@ -597,87 +511,6 @@ def nextsteps_budget(budget_entry: float, month: str):
 
 
 # __________ end of budget handling logic ____________
-
-
-def print_curr_intro():
-    """Prints beginning of currency selection.
-    Returns:
-        None."""
-    clear_terminal()
-    month = retrieve_month()
-    budg_month = MONTHS[int(month)]
-    print(f"\n ✅  You have chosen {budg_month}.")
-    create_table(CURRENCY, "Currency")
-
-
-def ask_curr():
-    """Displays selection of currency options in a table.
-    If valid, checks in.
-    Returns:
-        curr (num): Number corresponding to currency in table."""
-    print_curr_intro()
-    while True:
-        print("\n (💡 Type the 'No.' ")
-        curr = input(" ➤  Please choose your currency: ")
-        if validate_selection(curr, 3):
-            update_currency(curr)
-            str_curr = CURRENCY[int(curr)]
-            user_choice = confirm_input(str_curr)
-            if user_choice == "p":
-                clear_terminal()
-                print(f"\n ✅  Your chosen currency: '{str_curr}'")
-                ask_budget()
-                return curr
-
-
-def append_gsheet_exp(v: list):
-    """Appends to main list for uploading to GS.
-    Args:
-        v (list): Expenses retrieved from GS.
-    Returns:
-        all_rows (list): Converted values of previously logged expenses."""
-    v = fetch_gsheet_exp()
-    all_rows = []
-    for expense in v:
-        updates = []
-        for value in expense:
-            validate_value(value, updates)
-        all_rows.append(updates)
-    update_currency_exps(v, all_rows)
-
-
-def validate_value(value, updates):
-    """Chooses which value to append to secondary list.
-    Returns:
-        None."""
-    if value:
-        num_curr = SYMBOLS[value[0]][1]
-        # In the case of 'GBP' where the value is '3,000'.
-        value = round(Decimal(value[1:].replace(",", "")), 2)
-        retrieved_curr = retrieve_currency()
-        new_amount = convert_gsheet_exp(num_curr, retrieved_curr, value)
-        # Get rid of 'Decimal' class through float conversion.
-        dec_amount = float(round((new_amount), 2))
-        form_amount = format_expenses(retrieved_curr, dec_amount)
-        updates.append(form_amount)
-    else:
-        updates.append(value)
-
-
-def update_currency_exps(v: list, new_rows: list):
-    """Updates the converted previously logged expenses.
-    Args:
-        v (list): values retrieved from GS.
-        new_rows (list): values to be uploaded to GS.
-    Returns:
-        None."""
-    row_amount = len(v)
-    gsheet = retrieve_gsheet()
-    for i in range(3, row_amount + 3):
-        clear_range = [f"A{i}:F{i}"]
-        gsheet.batch_clear(clear_range)
-    for row in new_rows:
-        gsheet.append_row(row)
 
 
 def ask_category():
@@ -703,8 +536,7 @@ def ask_expense(category: str):
         expense_msg = f" ➤ Enter the amount you spent on {category}: "
         user_exp = input(expense_msg)
         if validate_num_selection(user_exp):
-            retrieved_curr = retrieve_currency()
-            form_expense = format_expenses(retrieved_curr, user_exp)
+            form_expense = format_expenses(user_exp)
             user_choice = confirm_input(form_expense, f' for "{category}".')
             if user_choice == "p":
                 print("\n ✅  Saved!\n ⌛  Updating your expense log...")
@@ -769,8 +601,7 @@ def create_expense(month: int, budget: str, colour="light_green"):
     Returns:
         None."""
     table = PrettyTable()
-    retrieved_curr = retrieve_currency()
-    budget = format_expenses(retrieved_curr, budget)
+    budget = format_expenses(budget)
     month = retrieve_month()
     budg_month = MONTHS[int(month)]
     table.field_names = [
@@ -780,13 +611,13 @@ def create_expense(month: int, budget: str, colour="light_green"):
     # So the table doesn't display duplicate categories.
     valid_cat_exp = check_list()
     for list_cat, list_exp in valid_cat_exp.items():
-        f_exp = format_expenses(retrieved_curr, round(list_exp, 2))
+        f_exp = format_expenses(round(list_exp, 2))
         table.add_row([colored(list_cat, "white"), colored(f_exp, "white")])
         table.align = "l"
 
     retrieve_all_rem_calcs()
     remainder = calculate_budget_remainder()
-    remainder = format_expenses(retrieved_curr, remainder)
+    remainder = format_expenses(remainder)
     table.add_row(["-----------------------", "-----------------------"])
     # Check if budget is '-' or '+' to determine colour of final table row.
     if float(remainder[1:]) < 0:
@@ -813,7 +644,7 @@ def nextsteps_expense_table(conc_table: str):
         conc_table (str): Expense table.
     Returns:
         None"""
-    # clear_terminal()
+    clear_terminal()
     print(f"\n{conc_table}")
     ask_update()
 
@@ -844,28 +675,12 @@ def retrieve_all_rem_calcs():
     """
     orig_budg = retrieve_currbudget()
     orig_rem = retrieve_remainder_value()
-    orig_budg_curr = retrieve_value_currency(orig_budg)
-    orig_rem_curr = retrieve_value_currency(orig_rem)
-    retrieved_curr = retrieve_currency()
     retrieved_budg = retrieve_budget()
     orig_budg_num = remove_formatting(orig_budg)
     orig_rem_num = remove_formatting(orig_rem)
 
-    if orig_budg_curr == retrieved_curr:
-        new_rem = round(
-            compare_budgets(orig_budg_num, orig_rem_num, retrieved_budg), 2)
-        return new_rem
-    else:
-        conv_orig_rem = round(
-            convert_gsheet_exp(orig_rem_curr, retrieved_curr, orig_rem_num), 2)
-        conv_orig_budg = round(
-            convert_gsheet_exp(
-                orig_budg_curr, retrieved_curr, orig_budg_num), 2)
-        new_rem = compare_budgets(
-            conv_orig_budg,
-            float(retrieved_budg),
-            conv_orig_rem)
-        return new_rem
+    return round(
+        compare_budgets(orig_budg_num, orig_rem_num, retrieved_budg), 2)
 
 
 def calculate_budget_remainder():
@@ -916,10 +731,10 @@ def format_data():
         "Other": "",
     }
     expenses = retrieve_expenses()
-    retrieved_curr = retrieve_currency()
+    # retrieved_curr = retrieve_currency()
     for key, value in expenses.items():
         if key in format:
-            format[key] = format_expenses(retrieved_curr, value)
+            format[key] = format_expenses(value)
     return format
 
 
@@ -948,31 +763,6 @@ def expensive_battleships():
     return cells
 
 
-def convert_OV_finals():
-    OV_gsheet = retrieve_overview()
-    month_int = int(retrieve_month()) + 1
-    values = OV_gsheet.row_values(month_int)[1:]
-    conv_values = []
-    for value in values:
-        old_curr = int(retrieve_value_currency(value))
-        curr = int(retrieve_currency())
-        new_value = float(remove_formatting(value))
-        conv_value = convert_gsheet_exp(old_curr, curr, new_value)
-        print(f"old curr: {old_curr}")
-        print(f"new curr {curr}")
-        print(new_value)
-        print(conv_value)
-        conv_values.append(conv_value)
-    print(conv_values)
-    # values = gsheet.getRange(f"B{row_num}:F{row_num}").getValues()
-    # print(values)
-    # gsheet.update(f"B{row_num}:F{row_num}", )
-    # clear_range = [f"B{row_num}:F{row_num}"]
-    # OV_gsheet.batch_clear(clear_range)
-    # for row in new_rows:
-    #     gsheet.append_row(row)
-
-
 def update_OV_cell_values():
     """Updates "Overview" sheet with values.
     Returns:
@@ -981,22 +771,18 @@ def update_OV_cell_values():
     exps = retrieve_expenses()
     user_logs = list(exps.values())
     OV = retrieve_overview()
-    retrieved_curr = retrieve_currency()
+    # retrieved_curr = retrieve_currency()
     for i, cell in enumerate(cells_to_update):
         if i < len(user_logs):
             initial_log = user_logs[i]
             cell_value = OV.acell(cell).value
             if cell_value is None:
                 cell_value = 0
-                addition = format_expenses(retrieved_curr, initial_log)
+                addition = format_expenses(initial_log)
             else:
-                old_curr = retrieve_value_currency(cell_value)
                 cell_value = remove_formatting(cell_value)
-                cell_value = round(
-                    convert_gsheet_exp(old_curr, retrieved_curr, cell_value), 2
-                )
                 addition = cell_value + float(initial_log)
-                addition = format_expenses(retrieved_curr, addition)
+                addition = format_expenses(addition)
             OV.update_acell(cell, addition)
     print("\n ✅  We've successfully updated your Month sheet!")
     print("Check your Overview sheet to view your entire expense history.")
@@ -1028,8 +814,6 @@ def update_worksheet():
     Returns:
         None."""
     print("⌛  Updating your worksheet...")
-    values = fetch_gsheet_exp()
-    append_gsheet_exp(values)
     append_remainder()
     append_budget()
     expenses = format_data()
@@ -1037,7 +821,6 @@ def update_worksheet():
     gsheet = retrieve_gsheet()
     gsheet.append_row(values_to_append)
     update_OV_cell_values()
-    convert_OV_finals()
 
 
 def main():
@@ -1046,7 +829,6 @@ def main():
         None."""
     print_intro()
     ask_name()
-    # get_rates()
 
 
 main()
