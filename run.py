@@ -620,7 +620,7 @@ def sum_prev_exps():
 def create_expense(month: int, budget: str, colour="light_green"):
     """Creates conclusive user table with budget + expenses.
     Args:
-        month (num): Num corresponding to Month selection.
+        month (int): Num corresponding to Month selection.
         budget (str): Formatted budget.
         colour (str): Has default value of "light_green".
     Returns:
@@ -633,23 +633,43 @@ def create_expense(month: int, budget: str, colour="light_green"):
         colored(f"Expenses for {budg_month}", colour),
         colored(f"{budg_month}'s budget: {budget}", colour),
     ]
-    # So the table doesn't display duplicate categories.
+    make_table_body(table)
+    table.add_row(["-----------------------", "-----------------------"])
+    make_table_body_past(table)
+    table.add_row(["-----------------------", "-----------------------"])
+    make_table_footer(table)
+    table.align = "l"
+    nextsteps_expense_table(table)
+
+
+def make_table_body(table):
+    """Makes up current expenses in table. Returns: None."""
+    # Current Expenses.
     valid_cat_exp = check_list()
-    prev_exp = sum_prev_exps()
     for list_cat, list_exp in valid_cat_exp.items():
         f_exp = format_expenses(round(list_exp, 2))
         table.add_row([colored(list_cat, "white"), colored(f_exp, "white")])
-    table.add_row(["-----------------------", "-----------------------"])
-    cats = ["Rent","Groceries","Vehicle","Cafe/Restaurant","Online Shopping","Other"]
+
+
+def make_table_body_past(table):
+    """Makes up retrieved expenses in table. Returns: None."""
+    # Past Expenses.
+    prev_exp = sum_prev_exps()
+    cats = ["Rent",
+            "Groceries",
+            "Vehicle",
+            "Cafe/Restaurant",
+            "Online Shopping",
+            "Other"]
     for value, cat in zip(prev_exp, cats):
         table.add_row(
             [colored(f"Past '{cat}' Expenses:", "light_yellow"),
                 colored(value, "light_yellow")])
-        table.align = "l"
+        
 
+def make_table_footer(table):
+    """Retrieves budget remainder in table footer. Returns: None."""
     remainder = format_expenses(calculate_budget_remainder())
-    table.add_row(["-----------------------", "-----------------------"])
-    # Check if budget is '-' or '+' to determine colour of final table row.
     if float(remainder[1:]) < 0:
         table.add_row(
             [
@@ -664,8 +684,6 @@ def create_expense(month: int, budget: str, colour="light_green"):
                 colored(remainder, "green"),
             ]
         )
-    nextsteps_expense_table(table)
-
 
 def nextsteps_expense_table(conc_table: str):
     """Prints the conclusive expense table.
@@ -740,12 +758,14 @@ def format_data():
             format[key] = format_expenses(value)
     return format
 
+
 def expensive_battleships():
     """Adds two parameters to create a cell format, e.g. 'C3'.
     Returns:
         cells (list): cells to be updated."""
     battleship = int(retrieve_month()) + 1
     return f"B{battleship}:G{battleship}"
+
 
 def update_cell_actual_value():
     OV = retrieve_overview()
@@ -757,7 +777,8 @@ def update_cell_actual_value():
     print("\n ✅  We've successfully updated your Month sheet!")
     print("Check your Overview sheet to view your entire expense history.")
     ask_to_exit()
-            
+
+
 def ask_to_exit():
     while True:
         ex_user = (input(
