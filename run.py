@@ -457,6 +457,7 @@ def validate_retr_budget(budg):
                 .strip()
                 .lower())
             if user_budget_input == "u":
+                clear_terminal()
                 print(f"✅  Budget for {budg_month}: {budg}")
                 break
             elif user_budget_input == "c":
@@ -546,6 +547,7 @@ def ask_expense(category: str):
             form_expense = format_expenses(user_exp)
             user_choice = confirm_input(form_expense, f' for "{category}".')
             if user_choice == "p":
+                clear_terminal()
                 print("\n ✅  Saved!\n ⌛  Updating your expense log...")
                 update_expenses([category, user_exp])
                 continue_expenses()

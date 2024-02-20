@@ -5,6 +5,13 @@ The application is available for viewing [here](https://tag-track-revived-46181e
 
 The Google Sheets for this application is available for use [here](https://docs.google.com/spreadsheets/d/1kGdwNqPvyRYIRL4LbEy-CgS1YDIHI6uKYHOG7gMbuB8/edit#gid=1925370965).
 
+
+### A Note to Readers
+This application was initially developed with the additional functionality of currency choice and conversion, using the forex-python API. However, as the project neared its completion, the API malfunctioned and essentially shut down for maintenance, rendering this functionality unresponsive and with several terminal errors. As this was outside of control, a decision was made to remove this functionality and re-encorporate it at a later stage, perhaps using a different API. 
+
+The last commit message associated with currency conversion has a hash of _d30cd8ca8066823956a70192c097ff8337439da0_, and can be found [here](https://github.com/Ana-Niko-byte/tag-track/commits/main/). 
+
+
 ![reponsive UI](docs/images/amiresponsive.png)
 
 # Business/Social Goals
@@ -20,14 +27,13 @@ The Google Sheets for this application is available for use [here](https://docs.
 - As a first time user, I want the ability to quickly select options and enter my expenses.
 - As a first time user, I expect immediate feedback on my entries, with an option to easily exit and restart in case of errors.
 - As a first time user, I prefer having a single view where my expenses and budget are logged together for personal analysis. This should include a remainder calculation after all of the expenses have been deducted from my budget. 
-
+---
 - As a regular user, I seek the capability to log multiple expenses simultaneously in different categories and see the total spent in each category.
 - As a regular user, I need a visual cue to indicate when my spending exceeds my monthly budget.
 - As a regular user, I desire a monthly expense record for future reference in a recognisable and legible format.
-- As a regular user, I want the option of being able to log my expenses in multiple currencies.
 
 # UX Goals
-Due to the solely-backend nature of this project, enhanecement strategies for the UI's visual appeal are limited. Nonetheless:
+Due to the solely-backend nature of this project, enhancement strategies for the UI's visual appeal are limited. Nonetheless:
 
 - Design a well-structured terminal interface that utilizes spacing effectively for optimal readability.
 - Clear the terminal screen after each significant input to avoid visual littering and focus attention towards input validation and the next step.
@@ -37,30 +43,25 @@ Due to the solely-backend nature of this project, enhanecement strategies for th
 
 # Structure 
 The structure of the 'Tag Track' application is as follows: 
-
 - Title
-- Name input prompt with validation
-- Month input prompt (number list) with validation
-- Retrieval of any existing budget/ budget remainder
-    - + option of using the values or changing them
-- Currency input prompt with validation
-    - EUR
-    - GBP
-    - USD
-- Total Monthly Budget input prompt with validation
-    - Or budget retrieval system based on the user's month selection. 
-- List of Categorised Expenses
+- Name input prompt with validation.
+- Month input prompt (number list) with validation.
+- Retrieval of any existing budget/ budget remainder.
+    - Option of using the values or changing them.
+- Total Monthly Budget input prompt with validation.
+    - Or category selection based on the user's choice of using existing budget or changing it.
+- List of Categorised expenses for selection:
     - Rent
     - Groceries
     - Vehicle
     - Cafe/Restaurant
     - Online Shopping
     - Other
-- Category Input prompt with validation
-- Expense input prompt with validation
-- Visual Appendage in the form of a table with relevant budget calculation
+- Category Input prompt
+- Expense input prompt with validation.
+- Visual Appendage in the form of a table with relevant budget calculation. The table also retrieves the values of previous logs for each category and displays them in a different colour. 
 - _Press 'u' to upload expenses to Google Sheets OR Type 'q' to quit..._
-- Ability to _quit_ at each input prompt
+- Ability to _quit_ at most input prompts.
 
 # Scope of Application
 The purpose of the application is to gather expense data from the user and input this information into Google Sheets as individual rows. Google Sheets serves as a reference and as a recognisable and legible format in which the user may review their expenses, and see their annual spendings. 
@@ -68,24 +69,24 @@ The purpose of the application is to gather expense data from the user and input
 The scope of this application is as follows: 
 1. Name input with validation (to personalise the experience).
 
-2. Choice of month with validation and confirmation prompt, essential as the app works on a monthly framework for budgeting and final tallies. Users can select a month numerically (e.g., 1 for January, 2 for February), with a confirmation step to prevent accidental selections. The chosen month appears as a heading in both Google Sheets and the terminal table.
+2. Choice of month with validation and confirmation prompt, essential as the app works on a monthly framework for budgeting and final tallies. Users can select a month numerically (e.g., _1_ for _January_, _2_ for _February_), with a confirmation step to prevent accidental selections. The chosen month appears as a heading in both Google Sheets and the terminal table.
 
-3. Budget and Budget Remainder retrieval. After selecting a month, the application checks for any existing values in cells 'B1' - Month Budget, and 'F1' - Month Remainder. If found, prompts the user whether they wish to use these values or change them. If the user selects to use - the application jumps to category selection for expense logging. Else, continues to currency selection. 
+3. Budget and Budget Remainder retrieval. After selecting a month, the application checks for any existing values in cells _B1 - Month Budget_, and _F1 - Month Remainder_. If found, prompts the user whether they wish to use these values or change them. If the user selects to use - the application jumps to category selection for expense logging. Else, continues to budget input. 
 
-4. Currency selection with validation. 
+4. Monthly Budget Input - later transferred to Google Sheets as data for calculation. All expenses get appended with the Euro currency symbol. 
 
-5. Monthly Budget Input - later transferred to Google Sheets as data for calculation.
+5. User inputs are confirmed with _Type 'p' to proceed, 'c' to change, or 'q' to quit:_. The input accepts lower and uppercase letters, strips them incase the user pressed _space_ after the letter, and applies logic accordingly. 
 
-6. User inputs are confirmed with _Type 'p' to proceed, 'c' to change, or 'q' to quit:_. The input accepts lower and uppercase letters, and applies logic accordingly. 
+6. A list of expense categories, aiding users in organized entry of expenses. These categories also help in sorting expenses in Google Sheets and are used for generating expense totals in each category for each month in the annual _Overview_ sheet.
 
-7. A list of expense categories, aiding users in organized entry of expenses. These categories also help in sorting expenses in Google Sheets and are used for generating expense totals in each category for each month in the annual _Overview_ sheet.
+7. After entering expenses, the application automatically calculates and displays the total monthly expenses per category. This feature helps users understand their spending patterns and notice any imbalances.
 
-8. After entering expenses, the application automatically calculates and displays the total monthly expenses per category. This feature helps users understand their spending patterns and notice any imbalances. If the user had previously changed their desired currency from the one the application logged the budget remainder onto Google Sheets, changes in value are applied accordingly and the correct value is returned (subject to Currency Rates from Forex-Python).
-
-9. A prompt to ask whether users would like to upload their expenses to Google sheets into organised month spreads. This is the final step and serves as a reference directory for the user should they wish to review or amend their spendings at a later stage. The application displays a goodbye message after everything has been uploaded and exits. 
+8. A prompt to ask whether users would like to upload their expenses to Google sheets. This is the final step and serves as a reference directory for the user should they wish to review or amend their monthly spendings at a later stage. The application displays a goodbye message after everything has been uploaded and exits. 
 
 # Strategy
-The aim of the application is to provide an easy-to-use and interactive platform for monitoring expenses within a budget framework. Users can track their spending against a monthly budget and have the flexibility to check their remaining balance, whether it's in surplus or deficit, at any time. The application is flexible with currencies (at the moment supporting either 'EUR', 'GBP', and 'USD'), and applies all relevant changes to remainder value accordingly. Through Tag Tracker, users gain insights into their spending patterns, identify which months incur higher expenses, and adjust their spending behavior accordingly.
+The aim of the application is to provide an easy-to-use and interactive platform for monitoring expenses within a budget framework. 
+
+Users can track their spendings against a monthly budget and have the flexibility to check their remaining balance, whether it's in surplus or deficit, at any time. Through Tag-Track, users gain insights into their spending patterns, identify which months incur higher expenses, and can adjust their spending behavior accordingly.
 
 ## Target Audience
 - Anyone aged 16+ yrs.
@@ -113,7 +114,7 @@ Below is the flowchart for the application. Noted is the general flow of the app
 
 # Aesthetics
 ### Colour
-Color plays a key role in the tag-tracker interface, with specific hues chosen for their significance and legibility. The title of the tag-tracker and the headers of all tables feature green, a color universally linked with finance and money. Green is also chosen for its high legibility in the colorama Python library, making it a suitable choice.
+Color plays a key role in the tag-track interface, with specific hues chosen for their significance and legibility. The title of the tag-tracker and the headers of all tables feature green, a color universally linked with finance and money. Green is also chosen for its high legibility in the colorama Python library, making it a suitable choice.
 
 ![tag tracker heading](docs/images/heading.png)
 
@@ -121,6 +122,8 @@ For instances where a user exceeds their monthly budget, red is utilized in the 
 
 ![conclusive user table feature (green)](docs/images/conclusive-table-green.png)
 ![conclusive user table feature (red)](docs/images/conclusive-table-red.png)
+
+Yellow is chosen for showing finances that were logged previously - mostly because it differs the most from red and green, and is easy to read against the dark terminal screen.
 
 The main reason for using colour in the application is to provide a somewhat engaging interface for the user, and to distinguish key pieces of text from the terminal face. 
 
@@ -137,14 +140,10 @@ Emojis/icons are used throughout the application to visually aid users in distin
 - 👋 : signifies exiting. 
 
 # Features
-### Month/Currency/Categories Choice
+### Month/Categories Choice
 Users can choose a month for tracking their expenses from a numerical list. This selection process retrieves the corresponding monthly sheet from Google Sheets, along with any existing data relevant to that month. Later in the application, both the user's expenses and budget information are recorded onto the appropriate Google Sheet for that month, and calculations for total expenses are made for the corresponding month row in the overview sheet. 
 
 ![month feature](docs/images/month-selection.png)
-
-Users are given the option to select from 3 different currencies to record their expenses. This feature integrates with the currencies Python library, enabling the display of corresponding currency symbols next to the users' expense and budget entries. Forex-python is used for converting values from one currency to another, e.g., for the logic calculating budget remainder.
-
-![currency feature](docs/images/currency-selection.png)
 
 Users are given the option to select from 6 different categories to record their expenses. These categories represent columns in the month sheets, to which users can log their expenses. These same columns are replicated in the overview sheet, providing users with a detailed annual summary of their expenses across all categories.
 
@@ -159,9 +158,9 @@ Note: This image does not relate to the path followed through the application as
 As mentioned, the user's month selection retrieves the corresponding Google Sheet with all relevant data already on it. This data includes a check for an existing budget previously logged by the user:
 
 #### Existing Budget
-If one exists, the user is prompted on whether they wish to continue with this budget, or update it to a new value. The input is then validated and the application proceeds according to the user's choice. 
+If a month budget exists, the user is prompted to choose to continue with this budget, or update it to a new value. The input is then validated and the application proceeds according to the user's choice. 
 
-In the first image below, there is an existing budget of 6000 euro for the month of January.
+In the first image below, there is an existing budget of 3000 euro for the month of January.
 
 ![existing budget in Google Sheets](docs/images/existing-budget.png)
 
@@ -185,8 +184,14 @@ The conclusive user table displays a summary of the user's logged expenses. The 
 ### Google Sheets Logging + Overview Calculations
 Under the conclusive user expense table, the user is asked whether they want to log their expenses to Google Sheets. If not, the application displays a goodbye message and does not log anything. If yes, the expenses are logged to Google Sheets and the overview sheet is automatically updated with new totals.
 
-Below is an example after the user has been logging expenses over the course of a few months. Expenses are added up and logged to the overview sheet. In the case of cell 'F2' - where the currency differs from the rest, the user had logged only one expense, the currency of 'GBP'. This means that any existing value for that category was converted to 'GBP', prior to having the new expense added onto it and logged.
+Below is an example after the user has been logging expenses over the course of a few months. Expenses are added up and logged to the overview sheet.
+
 ![overview feature](docs/images/tag-track-overview.png)
+
+### Goodbye
+If the user types 'q' at any of the checkpoints, the application displays a goodbye message and exits. Any relevant values are reset. 
+
+![goodbye message](docs/images/goodbye.png)
 
 # Technologies
 - [gspread](https://pypi.org/project/gspread/) - for interacting with Google Sheets.
@@ -197,7 +202,7 @@ Below is an example after the user has been logging expenses over the course of 
 - [colorama](https://pypi.org/project/colorama/) - for text colours. 
 - [prettytable](https://pypi.org/project/prettytable/) - for tables.
 - [termcolor](https://pypi.org/project/termcolor/) - used in title and heading colours. 
-- [currencies](https://pypi.org/project/currencies/) - for currency symbols and conversions. 
+- [currencies](https://pypi.org/project/currencies/) - for currency symbols. 
 - [amiresponsive](https://ui.dev/amiresponsive?url=https://tag-track-cc45575f1826.herokuapp.com/) - for the responsive png
 - [Code Beautify](https://codebeautify.org/python-formatter-beautifier) - for beautifying my Python Code.
 - [CI Python Linter](https://pep8ci.herokuapp.com/) - for detecting lint in my code.
@@ -208,15 +213,14 @@ Below is an example after the user has been logging expenses over the course of 
 |----------|----------|----------|----------|----------|
 | Intro   | Print? Ask Name?   | Click 'Run Program' | Heading prints as expected, asks Name | <img src="docs/images/thumbs-up.jpg">   |
 | Name Input  | Loop until Validated? Month input?   | Inputs: '', 'ana43', '35', 'ana'   | Loops until validated ('ana') with appropriate error messages, greeting with capitalised Name, asks Month | <img src="docs/images/thumbs-up.jpg"> |
-| Month Input   | Loop until Validated? Currency choice?   | Inputs: '', letters, numbers > 12, '1' | Loops until validated ('1') with appropriate error messages, asks Currency   | <img src="docs/images/thumbs-up.jpg"> |
-| Budget Retrieval   | Retrieve Existing Budget? Display? Give option to proceed or change? Loop Validation? Ask Currency if no Existing?   | Check for existing budget on Tag-Track Google Sheets, Inputs: 'w', 'c', 'p' | Retrieves and Displays Correct Budget, Loops until validated (both 'c' to change, then 'p' to proceed), If none exists - asks for Budget, Displays Category Choice | <img src="docs/images/thumbs-up.jpg"> |
+| Month Input   | Loop until Validated? Retrieves Budget?   | Inputs: '', letters, numbers > 12, '1' | Loops until validated ('1') with appropriate error messages, asks Budget Retrieval Message/ Jumps to Budget Prompt   | <img src="docs/images/thumbs-up.jpg"> |
+| Budget Retrieval   | Retrieve Existing Budget? Display? Give option to proceed or change? Loop Validation? Ask Budget if no Existing?   | Check for existing budget on Tag-Track Google Sheets, Inputs: 'w', 'c', 'p' | Retrieves and Displays Correct Budget, Loops until validated (both 'c' to change, then 'p' to proceed), If none exists - asks for Budget, Displays Category Choice | <img src="docs/images/thumbs-up.jpg"> |
 | Procedure Check in! | 'p' to proceed, 'c' to change - re-plays previous feature, 'q' to exit | Inputs: '', 'g', '4', 'p', 'c', 'q' (at different intervals)  | Loops until validated ('p') with appropriate error messages, proceeds to next feature, 'c' allows the user to change their input, 'q' exits the application | <img src="docs/images/thumbs-up.jpg"> |
-| Currency Choice   | Loop until Validated? Exit Check? | Inputs: '', letters, numbers > 3, '1' | Loops until validated ('1') with appropriate error messages, proceeds to next Check | <img src="docs/images/thumbs-up.jpg"> |
-| Currency Symbol + Formatting | Return Correct Symbol on Expense? | Choose Currency, Visual Check on confirmation msg, budget format + expenses format later | Correctly Returns Formatted Expense | <img src="docs/images/thumbs-up.jpg"> |
+| Currency Formatting | Correctly appends euro symbol? | Visual Check on budget format + expenses format | Correctly Returns Formatted Expense | <img src="docs/images/thumbs-up.jpg"> |
 | Category Choice | Loop until Validated? Expense Input Prompt? | Inputs: '', letters, numbers > 6, '2' | Loops until validated ('2') with appropriate error messages, proceeds to Expense Input | <img src="docs/images/thumbs-up.jpg"> |
 | Expense Input | Loop until Validated? Take Float? Expense Check? | Inputs: '', letters, '103.56' | Loops until validated ('103.56') with appropriate error messages, proceeds to Expense Check | <img src="docs/images/thumbs-up.jpg"> |
 | Expense Check | Loop until Validated? Allow another Expense Entry? 'a', Continue to User Expense Table? 'c' | Inputs: '', 't', 'a', 'c' | Loops Until Validated, Allows another expense entry 'a' - (Category Choice, then Expense Input Prompt), Continues to User Expense Table - 'c' | <img src="docs/images/thumbs-up.jpg"> |
-| Correct Remainder Calculation | Display: Correct Remainder Value? Correct Symbol Appendage? | Manual Addition/Subtraction + Comparison, Visual Check for Symbol + Colour if negative/positive value of remainder | Displays all Values + Correct Colours for negative/positive budget remainder | <img src="docs/images/thumbs-up.jpg"> |
+| Correct Remainder Calculation | Display: Correct Remainder Value? Symbol Appendage? | Manual Addition/Subtraction + Comparison, Visual Check for Symbol + Colour if negative/positive value of remainder | Displays all Values + Correct Colours for negative/positive budget remainder | <img src="docs/images/thumbs-up.jpg"> |
 | User Expense Table | Display: Budget? Correct Values including Addition of Same-Category Expenses? Remainder in Colour?, Upload/Exit Check? | Manual Addition/Subtraction + Comparison | Displays all Values + Correct Colours for negative/positive budget remainder | <img src="docs/images/thumbs-up.jpg"> |
 | Upload/Exit Check | Loop until Validated? Upload ('u') or Exit ('q')? | Inputs: '', 't', 'u', | Loops until validated, Uploads + Displays Success Msg, and/or Exits on 'q' | <img src="docs/images/thumbs-up.jpg"> |
 
@@ -292,11 +296,31 @@ This issue was highlighted in the library's repository in the 'issues' tab, and 
 
 It is my intention to re-encorporate this logic into the application through the original API source following course completion. 
 
+### Deprecation Warning
+While not necessarily an error, a warning was found on the terminal window regarding a deprecation of functionality associated with the gspread library. 
+
+![deprecation warning](docs/images/deprecation-warning.png)
+
+While the warning was addressed (to the best of my abilities), the warning message failed to disappear. A useful link used while attempting to resolve this issue can be found [here](https://github.com/burnash/gspread/issues/1310).
+
 # Accessibility & Performance
-This application was developed using VSCode's Pylance; a fast and feature-rich language server for Python that provides excellent IntelliSense capabilities. It enhances your development experience with: Type checking. Autocompletion.
+The application provides several instances of input validation, with relevant error messages and visual cues - as illustrated in the use of emojis:
+- ⚠️: signifies a checkpoint or warning message.
+- ➤ : signifies an input prompt.
+    - ❌ : failed validation.
+    - 👉 : indicates the type of expected input.
+    - ✅ : successful validation.
+- 💡 : signifies insight/note/tip.
+- ⌛ : signifies a pending request.
+- 👋 : signifies exiting.
+ and colour cues in the conclusive user table (red and green for overdraft). 
+
+ Overall, the application responds quickly, except where the budget remainder and conclusive user table are being formulated (generally takes ~20 seconds) for everything to print.
 
 # Deployment
-Please Note: The guide below details the steps in accordance with the original application deployment titled 'tag-track', however due to some billing issues the application fell asleep (as can be seen from the third image below) and later faded into a lighter purple. The application is now deployed using 'tag-track-revived', with the exact same steps. 
+Please Note: The guide below details the steps in accordance with the original application deployment titled _tag-track_, however due to some billing issues the application fell asleep (as can be seen from the third image below) and later faded into a lighter purple. The application is now deployed using _tag-track-revived_, with the exact same steps. 
+
+The deployed application can be found at the top of this document.
 
 ### General Requirements:
 - Your Python code must be placed in the `run.py` file.
