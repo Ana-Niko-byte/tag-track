@@ -663,7 +663,7 @@ def make_table_body_past(table):
             "Other"]
     for value, cat in zip(prev_exp, cats):
         table.add_row(
-            [colored(f"Past '{cat}' Expenses:", "light_yellow"),
+            [colored(f"Past '{cat}' Tags:", "light_yellow"),
                 colored(value, "light_yellow")])
         
 
