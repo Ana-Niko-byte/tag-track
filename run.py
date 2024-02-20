@@ -525,8 +525,8 @@ def ask_category():
     """Displays categories in a table. If valid, calls for expense value.
     Returns:
         cat (num): Number corresponding to category."""
-    create_table(EXPENSES, "Expense Category")
     while True:
+        create_table(EXPENSES, "Expense Category")
         print("\n (💡  Type the 'No.' )")
         cat = input(" ➤  Please choose a category: ")
         if validate_selection(cat, 6):
@@ -579,7 +579,7 @@ def continue_expenses():
             create_expense(month, retrieved_budg)
             break
         else:
-            print(f" ❌  Invalid input: {user_answer}.\nPlease try again.")
+            print(f" ❌  Invalid input: '{user_answer}'.\nPlease try again.")
 
 
 def check_list():
@@ -795,7 +795,7 @@ def ask_to_exit():
             ask_month()
             break
         else:
-            print("\n ❌  Invalid input.")
+            print(f"\n ❌  Invalid input '{ex_user}'.")
             print(" 👉  Please choose either 'q', or 's' to proceed.")
 
 
